@@ -41,7 +41,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: './components/schemas/events.yaml#/TrackingEvent'
+              $ref: '#/components/schemas/TrackingEvent'
             examples:
               lesson_started:
                 summary: Student begins a video lesson
@@ -153,6 +153,9 @@ components:
         event payload. Mismatches are rejected with 401.
 
   schemas:
+    TrackingEvent:
+      $ref: './components/schemas/events.yaml#/TrackingEvent'
+
     IngestAccepted:
       type: object
       description: Confirmation returned when a tracking event is successfully accepted.
