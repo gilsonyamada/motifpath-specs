@@ -1,173 +1,92 @@
-# Learning loop
+# Guideline capture
 
-A log that only grows isn't learning — it's a dumping ground. This loop is closed and has a pass
-criterion between stages:
+Not every review has something worth remembering, and of what's worth remembering, most of it
+isn't worth *tracking*. This skill has one filter and one output: if an observation survives the
+filter, it's written directly into `HEURISTICS.md` or a profile — nothing is staged as a
+"candidate," counted, or promoted through a pipeline first. A specific fix to a specific PR is
+not memory; it's just the PR. Only a guideline — something that would change how a *future*,
+unrelated review goes — earns a place here.
 
-```
-CAPTURE GATE  ──passes──▶  CAPTURE (lesson)  ──trigger──▶  GENERALIZATION (question)  ──recurrence ≥2──▶  PROMOTION (checklist item)
-                                ▲                                                                                  │
-                                └──────────────────────── disuse / refuted ◀──────────────────── PRUNING ◀─────────┘
-```
-
-Run at **Phase 8** of every review (and when a dry-run surfaces a genuinely new pattern).
+Run this at Phase 8 of every review (and when a dry-run surfaces a pattern worth keeping).
 
 ---
 
-## 0. Capture gate — the step that keeps this memory small
+## 1. The filter — guideline, or just this once?
 
-Before writing anything to `lessons/`, the finding must clear this gate. This is stricter than a
-generic checklist: MotifPath is a small team sharing one `motifpath-specs` repo, and a memory that
-fills up with one-off noise stops getting read by anyone.
+Before writing anything, put the observation through all three questions. All three must pass:
 
-Write a lesson **only if all of these hold**:
+1. **Remove the stack — does it survive?** If the rule doesn't exist without this repo's
+   framework/language, it's a **profile norm** (goes to `profiles/<repo>.md`, with evidence), not
+   a checklist item. If it doesn't survive at all — it only made sense for this one PR — it isn't
+   written anywhere.
+2. **Does it become a question?** "Use X" is an instruction, not a guideline. "Does the reused
+   routine's ordering still make sense at this caller's scale?" is. If you can't phrase it as a
+   question someone would ask on the *next* unrelated PR, it isn't generalized yet.
+3. **Is it falsifiable?** A question that always resolves to "yes, fine" doesn't rule anything
+   out — it's not worth a reviewer's attention on every future review.
 
-1. **It would change a future review's outcome**, not just its wording. If the exact same finding,
-   phrased differently, would already surface from an existing `HEURISTICS.md` item or an existing
-   profile norm, it doesn't need a new lesson — at most, update that profile with the evidence.
-2. **It's reachable again.** Either the same pattern already showed up in a second, distinct change
-   (different PR, different scope/repo), or it's severe enough on its own (see trigger table below)
-   that waiting for a second occurrence would be irresponsible.
-3. **It isn't already covered.** Check `lessons/INDEX.md` and the relevant profile first — a
-   near-duplicate lesson is a sign the existing one needs its trigger widened, not a sign a new file
-   is needed.
-4. **It survives the three-question test** in §2 below.
+This is a **conceptual** test, not a statistical one — it doesn't matter whether the pattern has
+been seen once or ten times. Frequency isn't the signal; generality is. That's also why severity
+alone (an `escaped-to-production` defect, or a reviewer catching something the checklist plainly
+should have) is enough on its own to write something down immediately, with no waiting period.
 
-If a finding fails the gate, it still gets mentioned to the user in the Phase 6 summary as "noted,
-not memorized" — visibility without cluttering the shared file.
+## 2. Where it goes
 
-## 1. Capture — when a finding clears the gate, which trigger applies
+- **Repo-agnostic → `HEURISTICS.md`.** Add it under the right axis, phrased as a question, with a
+  one-line "smell." A short illustrative case is fine as a parenthetical, but it's there to make
+  the question recognizable — it isn't tracked as its own artifact. Respect the **24-item cap**:
+  at the cap, adding a new item requires merging two neighboring items or cutting the weakest one
+  first. That's a judgment call made at write time by re-reading the checklist, not a decision
+  driven by usage counts.
+- **Repo-specific → the profile.** Add a row to `profiles/<repo>.md`'s "Local norms" table, with
+  evidence (`file:line`, or a command that proves it). No norm enters a profile without evidence —
+  that's what keeps a profile a record of the repo, not the reviewer's taste.
 
-| Trigger | What it teaches | Signal |
-|---|---|---|
-| **review-received** — someone else caught something our checklist wouldn't have | a genuinely new heuristic; the richest source | recall |
-| **finding-confirmed** — our finding was accepted and fixed | the question was worth asking; counts a hit | precision ✔ |
-| **finding-rejected** — the author disagreed with good reason | false positive: narrow the trigger condition or downgrade the item | precision ✘ |
-| **escaped-to-production** — a defect passed review and showed up later | blind spot: no question covered it | recall ✘✘ |
-| **process** — a mistake in the method itself (pagination, dedup, anchoring, phase order) | the method itself is reviewable | efficiency |
+## 3. What NOT to write
 
-`finding-confirmed` on its own, without anything surprising about *why* it worked, usually fails the
-capture gate (item 1 above) — it confirms an existing item is doing its job; log it in
-`METRICS.md`'s `confirmed` count instead of writing a new lesson file.
+- A fix that's already fully described by the PR itself and doesn't generalize beyond it.
+- Anything an existing checklist item or profile norm already covers — if the existing wording is
+  too narrow to have caught this case, **widen it in place**; don't add a near-duplicate next to
+  it.
+- An impression ("this feels like it could be a problem sometimes") with no concrete case behind
+  it. If you can't point to the PR that prompted the question, it isn't ready to write down.
+- A false positive on its own (the author rejected a finding with good reason) doesn't need a new
+  entry — it means an *existing* item's trigger condition is too broad. Narrow that item's wording
+  or downgrade it to a suggestion; don't add a second item next to it.
 
-## 2. Generalization — the three-question test
+## 4. Sharing — staged, never auto-pushed
 
-Before saving, run the case through:
-
-1. **Remove the stack — does the lesson survive?** If it doesn't exist without the framework/repo
-   name, it's a project norm (goes to the profile), not a heuristic.
-2. **Does it become a question?** If it can only be phrased as an imperative ("use X"), it isn't
-   generalized yet.
-3. **Is it falsifiable?** A question whose answer is always "yes, fine" rules nothing out — it
-   doesn't become an item.
-
-**Two mandatory layers:** the **case is concrete** (with the repo and stack — that's what makes it
-recognizable); the **question is agnostic** (that's what travels to another repo or project). Only
-the question is promoted to the checklist.
-
-## 3. Lesson format (`lessons/L###.md`, one file per lesson)
-
-```markdown
----
-id: L###
-date: YYYY-MM-DD
-origin: review-received | finding-confirmed | finding-rejected | escaped-to-production | process
-axis: A-system | B-data | C-change | D-input | E-method
-trigger: <what kind of change should re-read this question>
-heuristics: [10, 12]     # items this lesson reinforces — empty if it's a brand-new pattern
-scopes: [motifpath-core, motifpath-web]
-status: candidate | promoted | archived
-hits: 0                  # +1 per confirmed finding this question produced
-source: <PR / incident / who reviewed>
----
-
-**Case:** what happened, concrete, with enough detail to recognize it again.
-
-**Question that would have caught it:** … (agnostic — this is the part that travels)
-
-**Smell:** …
-
-**Doesn't apply when:** when this question should NOT fire / generates noise.
-```
-
-After creating it, add one line to `lessons/INDEX.md`. **The index is what gets loaded on every
-review** — never the whole folder. That's what keeps context cost ~constant as memory grows.
-
-## 4. Promotion — objective criterion
-
-A `candidate` lesson becomes a `HEURISTICS.md` item when:
-
-- **recurrence ≥ 2 in distinct scopes** (different repos/services — motifpath-core vs.
-  motifpath-web vs. motifpath-infra vs. motifpath-specs, or core-domain vs. event-ingestion;
-  repeating in the same module doesn't count); **or**
-- **origin = escaped-to-production** with real impact → immediate promotion; **or**
-- **the user promotes it manually.**
-
-When promoting: write **question + smell in ≤3 lines**, mark the lesson `promoted`, and don't repeat
-the case in the checklist (keep the link). Register the item in `HEURISTICS.md`'s activation table
-— an item no trigger activates never runs.
-
-**24-item cap:** at the cap, promoting requires merging two neighboring items or pruning one.
-
-## 5. Pruning — the stage everyone skips
-
-- An item with **0 hits across 20 reviews that activated it** → demoted to lesson `archived`.
-- An item with a **rejection rate > 50%** → rewrite its trigger condition or archive it.
-- A `candidate` lesson with no second occurrence in **6 months** → `archived`.
-
-Archiving ≠ deleting: the file stays, drops out of the default load, and comes back if the pattern
-reappears. A heuristic costs reviewer attention on **every** review — pruning is what keeps the
-checklist sharp instead of long.
-
-## 6. Metrics
-
-One line in `lessons/METRICS.md` per review. They exist to decide promotion and pruning from data,
-not impression:
-
-```
-YYYY-MM-DD | <PR ref> | scope: <repo/service> | published: N | confirmed: N | rejected: N | escaped: N | heuristics: [n,...]
-```
-
-`confirmed`/`rejected` start as `-` and are filled in once the author responds. `escaped` gets
-filled if a defect from that change later shows up in production — the only way to measure recall.
-
-## 7. Sharing the memory — staged, never auto-pushed
-
-`lessons/`, `HEURISTICS.md`, and `METRICS.md` all live inside `motifpath-specs`, the repo the whole
+`HEURISTICS.md` and every `profiles/*.md` file live inside `motifpath-specs`, the repo the whole
 team already treats as the shared source of truth for skills. That's the distribution mechanism —
-there's no separate sync step, just the normal `motifpath-specs` pull/update flow every developer
-already has.
+no separate sync step, just the normal `motifpath-specs` pull/update flow every developer already
+has.
 
-When Phase 8 produces a new or updated lesson, a `HEURISTICS.md` promotion/pruning, or a
-`METRICS.md` line:
+When Phase 8 changes `HEURISTICS.md` or a profile:
 
-1. Stage exactly the changed files under `plugins/pr-review/skills/pr-review/` (never the rest of
-   the working tree).
+1. Stage exactly the changed file(s) under `plugins/pr-review/skills/pr-review/` (never the rest
+   of the working tree).
 2. Draft a Conventional Commit message per the `git` skill's rules — type `chore`, scope `skills`,
-   e.g. `chore(skills): promote L004 — threshold precedence duplicated client/server`. Bump
-   `plugins/pr-review/.claude-plugin/plugin.json`'s `version` (patch bump for a lesson add,
-   minor for a promotion/pruning that changes `HEURISTICS.md`) and add the matching
-   `plugins/pr-review/CHANGELOG.md` entry — the marketplace's update-check depends on this version
-   moving.
-3. **Stop and show the user the exact diff and the drafted commit message.** Never run `git commit`
-   or `git push` without explicit confirmation — this follows the exact same approval discipline as
-   Phase 6 for published review comments. If approved, the normal MotifPath git flow still applies:
-   this is a `chore/<TASK-CODE>/...` branch and PR to `dev` like any other change, not a direct
-   commit to a protected branch.
-4. If the user declines, the lesson stays as an uncommitted local file — it doesn't help the team
-   yet, but it isn't lost either. Say so plainly rather than silently dropping it.
+   e.g. `chore(skills): widen threshold-precedence guideline to cover cache/origin duplication`.
+   Bump `plugins/pr-review/.claude-plugin/plugin.json`'s `version` (minor, since this changes
+   reviewer behavior) and add the matching `plugins/pr-review/CHANGELOG.md` entry — the
+   marketplace's update-check depends on the version moving.
+3. **Stop and show the user the exact diff and the drafted commit message.** Never run
+   `git commit` or `git push` without explicit confirmation — this follows the same approval
+   discipline as Phase 6 for published review comments. If approved, the normal MotifPath git flow
+   still applies: a `chore/<TASK-CODE>/...` branch and PR, not a direct commit to a protected
+   branch.
+4. If the user declines, the change stays uncommitted locally — it doesn't help the team yet, but
+   it isn't lost either. Say so plainly rather than silently dropping it.
 
-## 8. Closing
+## 5. Closing
 
-Every review ends with **a write to disk**:
+Every review ends with:
 
-1. A line in `METRICS.md`.
-2. Ask the user: **"what did this review teach us?"** — capture a lesson per applicable trigger,
-   but only what clears the capture gate in §0.
-3. Promotion / pruning, if a criterion was met.
-4. A project norm discovered along the way → update the **profile** (with evidence), not the
-   checklist.
-5. If any of the above touched a file, run §7 before ending the turn.
-
-If the review ended with no write here, either there was truly nothing to learn (rare), or the
-closing step got skipped (common). A skill that only reads memory doesn't learn; it learns by
-writing at the end of every use.
+1. Ask the user: **"did this review surface a guideline worth keeping?"**
+2. Run the observation through the filter in §1. Most reviews produce nothing that passes it —
+   that's the expected outcome, not a gap. Don't manufacture something to write down.
+3. If it passes: write it directly into `HEURISTICS.md` or the relevant profile (§2), then run the
+   sharing step (§4).
+4. A project norm discovered along the way that *doesn't* pass the filter as a general guideline
+   (e.g. something purely descriptive, not yet evidenced twice) still belongs in the profile if it
+   has evidence — profiles record norms, not just guidelines, and don't need the same bar.

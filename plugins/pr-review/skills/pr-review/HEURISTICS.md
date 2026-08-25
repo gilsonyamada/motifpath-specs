@@ -124,9 +124,10 @@ plus the four always-on items.
 
 ## Budget
 
-**Cap: 24 items.** Promoting at the cap requires merging two neighboring items or pruning one
-(`LEARNING.md` §4–5). The restriction is intentional: a 40-item checklist doesn't get reviewed, it
-gets skimmed. Order items within each axis by historical hit rate (`lessons/METRICS.md`).
+**Cap: 24 items.** Adding at the cap requires merging two neighboring items or cutting the weakest
+one first (`LEARNING.md` §2) — a judgment call made by re-reading the checklist, not by usage data.
+The restriction is intentional: a 40-item checklist doesn't get reviewed, it gets skimmed.
 
-A new item here **only** enters through lesson promotion. Never write a rule directly into this
-file — the lesson is what holds the case, the evidence, and the contraindication.
+A new item here **only** enters after passing the filter in `LEARNING.md` §1: it has to survive
+without this repo's stack, phrase as a question, and be falsifiable. Never add a rule that's really
+just a fix specific to one PR — if it doesn't generalize, it doesn't belong here.

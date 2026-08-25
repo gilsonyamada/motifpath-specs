@@ -7,10 +7,10 @@ description: >
   motifpath-specs). Detects which repo/scope the PR touches, applies a project-agnostic systemic
   checklist, layers in per-repo norms from profiles/, deduplicates against existing PR discussion,
   and proposes findings anchored to exact lines — publishing only after explicit approval. When a
-  review surfaces a genuinely new, reusable lesson, stages it into the shared lessons/ memory in
-  motifpath-specs and drafts a commit — but never commits or pushes without confirmation. Trigger
-  on "review this PR", "review PR #N", "what do you think of this diff", "/pr-review", or before
-  merging any feat/fix/hotfix branch.
+  review surfaces a genuinely general guideline (not just a fix specific to this PR), it's written
+  directly into the shared checklist or profile in motifpath-specs, staged with a drafted commit —
+  but never committed or pushed without confirmation. Trigger on "review this PR", "review PR #N",
+  "what do you think of this diff", "/pr-review", or before merging any feat/fix/hotfix branch.
 argument-hint: "<PR reference> [intent reference: ticket/spec/ADR] [--dry-run]"
 ---
 
@@ -71,13 +71,12 @@ doesn't link it.
 ## Phase 3: Load context and read the change
 
 1. Read `HEURISTICS.md` and activate items per its trigger table.
-2. Read `lessons/INDEX.md` and open **only** the lessons whose trigger matches this change.
-3. Read the resolved profile (norms + boundaries + automatic gates already covered by CI).
-4. Read the PR metadata and the full diff.
-5. For each touched file, read the whole file (or its surroundings) **in its own context** to infer
+2. Read the resolved profile (norms + boundaries + automatic gates already covered by CI).
+3. Read the PR metadata and the full diff.
+4. For each touched file, read the whole file (or its surroundings) **in its own context** to infer
    the local pattern. Never judge an isolated line; never judge one scope by another scope's norms.
-6. Map anchorable hunks (file + line present in the diff).
-7. **List ALL existing discussion**, actually paginated: line comments, general comments, prior
+5. Map anchorable hunks (file + line present in the diff).
+6. **List ALL existing discussion**, actually paginated: line comments, general comments, prior
    reviews, bot and human, resolved and open. The criterion is "thread without a reply," never
    "recent comment."
 
@@ -144,13 +143,15 @@ One single review with all findings from all scopes, **all inline, empty body**
 hunk and say so. Reinforcing an already-discussed point → reply on the thread. Report the review
 URL at the end.
 
-## Phase 8: Close the learning loop (mandatory)
+## Phase 8: Capture a guideline, if there is one (mandatory)
 
-Run `LEARNING.md`: log the metrics line, ask **"what did this review teach us?"**, apply the
-**capture gate** before writing anything, and promote or prune. A review that ends without a
-memory write didn't learn — it just repeated itself. If the capture gate produced a new or updated
-lesson file, `LEARNING.md` also covers staging it for the team (`motifpath-specs/skills/pr-review`
-is the shared source of truth) and drafting — never sending — the commit.
+Run `LEARNING.md`: ask **"did this review surface a guideline worth keeping?"**, and run it through
+the filter before writing anything. Most reviews produce nothing that passes — that's the normal
+outcome, not a gap, and it's fine to end here with nothing written. What's not fine is skipping the
+question. When something does pass, it's written directly into `HEURISTICS.md` or the relevant
+profile (never staged as a separate tracked artifact), and `LEARNING.md` covers staging that change
+for the team (`motifpath-specs/skills/pr-review` is the shared source of truth) and drafting —
+never sending — the commit.
 
 ---
 
@@ -170,6 +171,7 @@ matters double here: the proposal has no running code yet to prove anything.
 - A finding is an actionable fact, not an impression. A wrong finding costs more than a missing one.
 - Inline comment, empty body, business effect before mechanism. What supported the conclusion
   doesn't travel with it.
-- Never load `lessons/` in full — only the index and the lessons it activates.
-- Never commit or push to `motifpath-specs` without the user's explicit go-ahead — memory writes
+- A guideline is written down because it's general, not because it recurred — frequency isn't the
+  bar, generality is. What doesn't generalize isn't recorded anywhere, even once.
+- Never commit or push to `motifpath-specs` without the user's explicit go-ahead — guideline writes
   follow the same approval discipline as published review comments.

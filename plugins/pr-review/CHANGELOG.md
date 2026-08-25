@@ -13,14 +13,18 @@
   table and a 24-item cap.
 - Finding format and tone rules (`FINDING.md`): inline-only, empty review
   body, business-effect-first, severity levels, reproduce-before-asserting.
-- Learning loop (`LEARNING.md`) with an explicit **capture gate** (Section 0)
-  that filters findings before they become shared lessons — tighter than the
-  reference skill's five-trigger capture model, by design: this is a small
-  team sharing one `motifpath-specs` repo, and unfiltered capture would make
-  the shared memory noisy for everyone, not just for one reviewer.
-- Git-sharing mechanism for lessons: Phase 8 stages lesson/heuristics/metrics
-  changes and drafts a Conventional Commit, but always stops for explicit
-  user confirmation before committing or pushing — never automatic.
+- Guideline capture (`LEARNING.md`) with a single filter (Section 1): a
+  guideline is written down because it generalizes (survives without this
+  repo's stack, phrases as a question, is falsifiable), never because it
+  recurred. This is a deliberate departure from the reference skill's
+  five-trigger, recurrence-tracked capture pipeline (candidate lessons,
+  hit counts, promotion after a second occurrence) — for a small team
+  sharing one `motifpath-specs` repo, tracking specific use cases waiting
+  to "graduate" is ceremony nobody will maintain. Only durable guidelines
+  are recorded, straight into `HEURISTICS.md` or a profile, on first sight.
+- Git-sharing mechanism: Phase 8 stages `HEURISTICS.md`/profile changes and
+  drafts a Conventional Commit, but always stops for explicit user
+  confirmation before committing or pushing — never automatic.
 - GitHub platform adapter (`PLATFORM.md`) using the `gh` CLI as primary, with
   `mcp__github__*` tools as fallback.
 - Profiles for all four MotifPath repos (`motifpath-core`, `motifpath-web`,

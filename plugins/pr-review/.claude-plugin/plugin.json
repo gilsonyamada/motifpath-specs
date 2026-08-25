@@ -2,7 +2,7 @@
   "name": "pr-review",
   "displayName": "PR Review",
   "version": "1.0.0",
-  "description": "Context-aware pull request review across all MotifPath repos, with a shared team memory of lessons learned.",
+  "description": "Context-aware pull request review across all MotifPath repos, sharing durable guidelines with the team as it finds them.",
   "author": { "name": "MotifPath Team" },
   "repository": "https://github.com/motifpath/motifpath-specs",
   "skills": "./skills/"
