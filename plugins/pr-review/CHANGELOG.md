@@ -1,5 +1,16 @@
 # PR Review — Changelog
 
+## [1.1.0] — 2026-08-25
+
+### Changed
+- Widened `PLATFORM.md`'s pagination invariant (#3) to explicitly cover
+  `list_files`, not just `list_discussion`. Caught live on motifpath-core#2:
+  `mcp__github__get_pull_request_files` silently returned only the first 30
+  of 40 changed files (GitHub's API default page size), which omitted the
+  new `internal/domain/` and `internal/ports/` packages and nearly produced
+  a false "this doesn't compile" blocking finding before a `per_page=100`
+  re-fetch showed the full file list was fine.
+
 ## [1.0.0] — 2026-08-25
 
 ### Added

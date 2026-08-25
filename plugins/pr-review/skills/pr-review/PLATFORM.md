@@ -48,9 +48,14 @@ comments" invariant.
    individual notifications.
 2. **Every finding inline, empty review body.** If the platform requires a non-empty body, send a
    neutral one sentence — never the review summary from `FINDING.md`'s Phase 6 presentation.
-3. **Full, paginated listing.** Never the API's default page, never a date filter — the criterion is
-   "thread without a reply." A thread audit that trusts the default pagination has already lost a
-   batch of comments without noticing.
+3. **Full, paginated listing — applies to `list_files` as much as `list_discussion`.** Never trust an
+   API's default page size. GitHub's `pulls/{PR}/files` endpoint defaults to 30 files per page and
+   truncates silently — no error, no visible "more pages" signal — so a file list read at the
+   default page size can look complete (a plausible count, no error) while missing every file past
+   position 30. Request `per_page=100` and page until empty, or use `gh pr diff <PR> --name-only`,
+   which doesn't truncate. Same discipline for `list_discussion`: the criterion is "thread without a
+   reply." A thread audit that trusts the default pagination has already lost a batch of comments
+   without noticing.
 4. **Reinforcement goes as a thread reply**, never as a new comment (item 19).
 5. **The anchor must exist in the diff.** If GitHub rejects the line, re-anchor to the nearest valid
    hunk and **say so** — never move the comment silently.
