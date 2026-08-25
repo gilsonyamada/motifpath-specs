@@ -6,13 +6,13 @@ Changes here propagate to all consuming repositories before any implementation b
 
 ## Repository Structure
 ```
-/openapi      → REST API specs (OpenAPI 3.1 YAML)
-/events       → Domain event schemas (JSON Schema)
-/features     → Business rule specs (Gherkin .feature files)
+/openapi      → REST API specs (OpenAPI 3.1 YAML), event schemas at
+                openapi/components/schemas/events.yaml
+/features     → Business rule specs (Gherkin .feature files, nested per domain)
 /adr          → Architecture Decision Records
 /prompts      → Versioned AI task prompts
 /evals        → Golden sets for PromptFoo evaluation
-/skills       → Claude Code skills for the whole team
+/plugins      → Claude Code skills for the whole team (plugin marketplace)
 ```
 
 ## Spec-First Discipline
@@ -43,7 +43,9 @@ Steps must be concrete and specific — avoid vague steps like "the system proce
 - Descriptions must be self-sufficient — NEVER reference ADR document names (e.g. "as per ADR-006") inside schema or property descriptions. The rationale belongs in the ADR; the description must stand alone for any reader without access to internal docs.
 
 ## Event Schema Standards
-Each event file in /events/ is a JSON Schema document.
+Event schemas live in `openapi/components/schemas/events.yaml`, referenced via `$ref`
+from `openapi/event-ingestion-service.yaml` — they're validated as part of OpenAPI lint,
+not as standalone JSON Schema files.
 Required fields on every event: event_type, student_id, session_id, occurred_at.
 NEVER add optional fields without a corresponding Gherkin scenario that exercises them.
 
@@ -59,9 +61,8 @@ Required sections: ## Context, ## Decision, ## Consequences
 NEVER delete an ADR. Superseded decisions get a note: "Superseded by ADR-NNN".
 
 ## CI Checks (must pass before merge)
-- OpenAPI validation: Redocly CLI
+- OpenAPI validation: Redocly CLI (also validates event schemas via `$ref`)
 - Gherkin syntax validation
-- JSON Schema validation for all event files
 - PromptFoo eval (runs on prompt file changes only)
 
 ## Skills (/plugins/)

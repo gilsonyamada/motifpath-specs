@@ -10,9 +10,8 @@ No feature is ready for implementation until its spec exists in this repository.
 
 | Directory | Contents |
 |---|---|
-| `/openapi` | REST API specs (OpenAPI 3.1 YAML) |
-| `/events` | Domain event schemas (JSON Schema) |
-| `/features` | Business rule specs (Gherkin `.feature` files) |
+| `/openapi` | REST API specs (OpenAPI 3.1 YAML), including domain event schemas at `openapi/components/schemas/events.yaml` |
+| `/features` | Business rule specs (Gherkin `.feature` files, nested per domain) |
 | `/adr` | Architecture Decision Records |
 | `/prompts` | Versioned AI task prompts |
 | `/evals` | Golden sets for PromptFoo evaluation |
@@ -102,18 +101,16 @@ This repository defines reusable GitHub Actions workflows consumed by all other 
 npm install
 ```
 
-This installs: `@redocly/cli`, `ajv-cli`, `@cucumber/gherkin`, `promptfoo`.
+This installs: `@redocly/cli`, `@cucumber/gherkin-streams`, `promptfoo`.
 
 ## Commands
 
 ```bash
-# Validate all OpenAPI specs
+# Validate all OpenAPI specs (this also validates the referenced event
+# schemas in openapi/components/schemas/events.yaml)
 npm run validate:openapi
 
-# Validate all event JSON schemas
-npm run validate:events
-
-# Validate all Gherkin feature files
+# Validate all Gherkin feature files (searched recursively under features/)
 npm run validate:features
 
 # Run PromptFoo evals against all prompt files
@@ -151,7 +148,8 @@ exercise.started      exercise.answer_sent   exercise.ended
 node.unlocked
 ```
 
-JSON Schemas for each event live in `/events/`.
+Event schemas live in `openapi/components/schemas/events.yaml`, referenced via
+`$ref` from `openapi/event-ingestion-service.yaml`.
 
 ## Related Repositories
 
