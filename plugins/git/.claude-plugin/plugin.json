@@ -1,0 +1,9 @@
+{
+  "name": "git",
+  "displayName": "MotifPath Git Workflow",
+  "version": "1.1.0",
+  "description": "Enforce MotifPath git conventions: Conventional Commits, branch naming with task codes, dev/main flow, PR structure.",
+  "author": { "name": "MotifPath Team" },
+  "repository": "https://github.com/motifpath/motifpath-specs",
+  "skills": "./skills/"
+}

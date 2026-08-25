@@ -16,7 +16,7 @@ No feature is ready for implementation until its spec exists in this repository.
 | `/adr` | Architecture Decision Records |
 | `/prompts` | Versioned AI task prompts |
 | `/evals` | Golden sets for PromptFoo evaluation |
-| `/skills` | Claude Code skills for the whole team |
+| `/plugins` | Claude Code skills for the whole team, distributed as a plugin marketplace |
 
 ## Onboarding
 
@@ -34,19 +34,31 @@ git clone git@github.com:motifpath/motifpath-infra.git
 mkdir -p ~/.claude
 cp motifpath-specs/global-CLAUDE.md ~/.claude/CLAUDE.md
 
-# 3. Install Claude skills
-cd motifpath-specs && bash skills/install.sh
+# 3. Add the MotifPath skills marketplace (one-time per machine)
+claude plugin marketplace add git@github.com:motifpath/motifpath-specs.git
 
-# 4. Verify
-ls ~/.claude/skills/
-# → git/
+# 4. Install each skill
+claude plugin install git@motifpath-skills
+claude plugin install adr-writer@motifpath-skills
+claude plugin install ai-consultant@motifpath-skills
+claude plugin install plan-writer@motifpath-skills
+claude plugin install product-discovery@motifpath-skills
+claude plugin install project-index-maintenance@motifpath-skills
+claude plugin install pr-review@motifpath-skills
+
+# 5. Turn on background auto-update for this marketplace (off by default for
+#    non-Anthropic sources): run `/plugin` inside a Claude Code session,
+#    open the Marketplaces tab, select motifpath-skills, and enable auto-update.
+
+# 6. Verify
+claude plugin list
 ```
 
-To update skills after pulling new changes:
-
-```bash
-cd motifpath-specs && git pull && bash skills/install.sh
-```
+Skills each version independently — check `plugins/<name>/CHANGELOG.md` for what
+changed. With auto-update on, Claude Code checks for newer versions shortly after
+each session starts and updates them on disk; run `/reload-plugins` (or start a
+new session) to pick up the update. Without auto-update, run
+`/plugin marketplace update motifpath-skills` manually after a `git pull`.
 
 ## Branching Model
 

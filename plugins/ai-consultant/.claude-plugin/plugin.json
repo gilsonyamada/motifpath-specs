@@ -1,0 +1,9 @@
+{
+  "name": "ai-consultant",
+  "displayName": "AI Consultant",
+  "version": "1.0.0",
+  "description": "Senior AI consultant perspective — flags AI anti-patterns, missed opportunities, and model/prompt design issues.",
+  "author": { "name": "MotifPath Team" },
+  "repository": "https://github.com/motifpath/motifpath-specs",
+  "skills": "./skills/"
+}

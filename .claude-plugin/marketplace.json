@@ -1,0 +1,46 @@
+{
+  "name": "motifpath-skills",
+  "owner": {
+    "name": "MotifPath Team"
+  },
+  "metadata": {
+    "description": "Claude Code skills for the MotifPath platform team — one plugin per skill, versioned independently."
+  },
+  "plugins": [
+    {
+      "name": "git",
+      "source": "./plugins/git",
+      "description": "Enforce MotifPath git conventions: commits, branches, PRs."
+    },
+    {
+      "name": "adr-writer",
+      "source": "./plugins/adr-writer",
+      "description": "Write and maintain Architecture Decision Records."
+    },
+    {
+      "name": "ai-consultant",
+      "source": "./plugins/ai-consultant",
+      "description": "Senior AI consultant perspective on AI-related decisions."
+    },
+    {
+      "name": "plan-writer",
+      "source": "./plugins/plan-writer",
+      "description": "Write structured implementation plans before coding."
+    },
+    {
+      "name": "product-discovery",
+      "source": "./plugins/product-discovery",
+      "description": "Strategic product thinking partner grounded in user pain and evidence."
+    },
+    {
+      "name": "project-index-maintenance",
+      "source": "./plugins/project-index-maintenance",
+      "description": "Reconcile the Project Index page in Notion at session close."
+    },
+    {
+      "name": "pr-review",
+      "source": "./plugins/pr-review",
+      "description": "Context-aware pull request review with a shared, versioned team memory of past findings."
+    }
+  ]
+}

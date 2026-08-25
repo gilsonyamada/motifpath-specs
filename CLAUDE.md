@@ -64,12 +64,18 @@ NEVER delete an ADR. Superseded decisions get a note: "Superseded by ADR-NNN".
 - JSON Schema validation for all event files
 - PromptFoo eval (runs on prompt file changes only)
 
-## Skills (/skills/)
-Skills are Claude Code behavioral guides used by the whole team.
-ALWAYS bump the version field in SKILL.md when modifying a skill.
+## Skills (/plugins/)
+Skills are Claude Code behavioral guides used by the whole team, distributed as the
+`motifpath-skills` plugin marketplace (`.claude-plugin/marketplace.json` at the repo
+root). Each skill is its own plugin under `plugins/<name>/`, with its own
+`.claude-plugin/plugin.json`, `skills/<name>/SKILL.md`, and `CHANGELOG.md`.
+ALWAYS bump the `version` field in both SKILL.md and plugin.json when modifying a skill
+— the marketplace's update check depends on the plugin.json version moving.
 ALWAYS add a CHANGELOG.md entry for every skill change.
 NEVER delete a skill — deprecate it with a note in CHANGELOG.md.
-Run `bash skills/install.sh` to distribute updated skills to your local machine.
+Team members run `/plugin marketplace update motifpath-skills` (or rely on
+auto-update, if enabled) then `/reload-plugins` to pick up changes — see the
+repo README for first-time setup.
 
 ## Reusable Workflows (.github/workflows/)
 This repo defines reusable GitHub Actions workflows consumed by all service repos.

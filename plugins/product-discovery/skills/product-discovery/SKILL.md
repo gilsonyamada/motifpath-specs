@@ -1,5 +1,6 @@
 ---
 name: product-discovery
+version: 1.0.0
 description: >
   Strategic Product Manager thinking partner for the music education platform project. Trigger for any discussion involving: market gaps, feature scope, user needs, hypothesis generation or prioritization, pain points for guitar students or music teachers, metrics, backlog management, business risks, or deciding what to build and why. Also trigger for phrases like "should we build", "is this a real problem", "how do we validate", "what metrics should we track", "add this to the backlog", "prioritize", or "what's the risk". Grounds every product decision in real user pain, market evidence, testable hypotheses, and measurable outcomes — before any technical solution is proposed.
 ---
