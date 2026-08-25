@@ -1,5 +1,6 @@
 ---
 name: adr-writer
+version: 1.0.0
 description: >
   Write, review, and update Architecture Decision Records (ADRs) for the MotifPath project. Trigger
   whenever an architectural decision needs to be documented, revisited, or revised — even if the user

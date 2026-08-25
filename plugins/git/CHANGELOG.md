@@ -1,9 +1,24 @@
 # Git Skill — Changelog
 
 All changes to the MotifPath git workflow skill are recorded here.
-Engineers should read this before re-running `install.sh`.
+This skill is distributed as the `git` plugin in the `motifpath-skills` marketplace —
+run `/plugin marketplace update motifpath-skills` (or let auto-update run) to pick up
+changes, then `/reload-plugins` to activate them in the current session.
 
 ---
+
+## [1.1.0] — 2026-08-25
+
+### Changed
+- Code Review delegation section now points to the new `pr-review` skill/plugin
+  instead of the four placeholder tech-stack review skills (`go-review`,
+  `vue-review`, `infra-review`, `spec-review`), which were never built.
+  `pr-review` detects repo/scope automatically and covers all four repos with
+  per-repo profiles, so the separate skills are no longer planned.
+- Migrated from a manually-copied `~/.claude/skills/git/` file to the `git`
+  plugin inside the `motifpath-skills` marketplace at
+  `motifpath-specs/.claude-plugin/marketplace.json` (see the repo README for
+  the new onboarding steps).
 
 ## [1.0.0] — 2026-05-17
 

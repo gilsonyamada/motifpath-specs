@@ -1,0 +1,9 @@
+{
+  "name": "adr-writer",
+  "displayName": "ADR Writer",
+  "version": "1.0.0",
+  "description": "Write, review, and update Architecture Decision Records for the MotifPath project.",
+  "author": { "name": "MotifPath Team" },
+  "repository": "https://github.com/motifpath/motifpath-specs",
+  "skills": "./skills/"
+}

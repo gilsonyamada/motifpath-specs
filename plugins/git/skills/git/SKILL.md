@@ -1,6 +1,6 @@
 ---
 name: git-workflow
-version: 1.0.0
+version: 1.1.0
 description: >
   Enforce MotifPath git conventions across all repositories — automatically and proactively.
   Trigger on any git-related task: writing commit messages, naming branches, creating PR
@@ -450,18 +450,14 @@ Rules:
 ## Code Review
 
 The git skill handles PR workflow and structure only.
-For code quality review, activate the appropriate tech-stack skill:
+For code quality review, delegate to the `pr-review` skill/plugin — it detects which
+of the four MotifPath repos (or which service inside the `motifpath-core` monorepo)
+a PR touches and applies the matching profile automatically, so one skill covers
+all four repos instead of a separate review skill per stack.
 
-| Repository | Review Skill |
-|---|---|
-| motifpath-core | `/skills go-review` (coming soon) |
-| motifpath-web | `/skills vue-review` (coming soon) |
-| motifpath-infra | `/skills infra-review` (coming soon) |
-| motifpath-specs | `/skills spec-review` (coming soon) |
-
-When a developer asks for a code review and no review skill is active, apply
-general review principles: correctness, test coverage, spec conformance, naming clarity.
-Explicitly note which tech-stack skill would give a deeper review.
+When a developer asks for a code review and `pr-review` isn't active, apply general
+review principles as a fallback: correctness, test coverage, spec conformance, naming
+clarity — and suggest activating `pr-review` for a deeper, repo-aware review.
 
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: project-index-maintenance
+version: 1.0.0
 description: >
   Use this skill when Gilson explicitly asks to update the MotifPath Project Index
   page in Notion. Trigger on phrases like "update the project index", "log this

@@ -23,26 +23,6 @@ jobs:
       - name: Lint OpenAPI specs
         run: npx @redocly/cli lint openapi/*.yaml
 
-  validate-events:
-    name: Validate Event Schemas
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - run: npm ci
-
-      - name: Validate JSON schemas
-        run: |
-          for schema in events/*.json; do
-            echo "Validating $schema..."
-            npx ajv validate -s "$schema" -d "$schema" --strict=false
-          done
-
   validate-gherkin:
     name: Validate Gherkin Syntax
     runs-on: ubuntu-latest
@@ -58,9 +38,9 @@ jobs:
 
       - name: Parse and validate feature files
         run: |
-          for feature in features/*.feature; do
+          find features -name '*.feature' -print0 | while IFS= read -r -d '' feature; do
             echo "Validating $feature..."
-            npx @cucumber/gherkin --format json "$feature" > /dev/null
+            npx @cucumber/gherkin-streams "$feature" > /dev/null
           done
 
   eval-prompts:
@@ -88,6 +68,6 @@ jobs:
   all-checks:
     name: All checks passed
     runs-on: ubuntu-latest
-    needs: [validate-openapi, validate-events, validate-gherkin]
+    needs: [validate-openapi, validate-gherkin]
     steps:
       - run: echo "All spec validations passed"

@@ -1,5 +1,6 @@
 ---
 name: plan-writer
+version: 1.0.0
 description: >
   Write structured technical implementation plans for MotifPath features, services, and
   infrastructure changes. Trigger whenever a task requires planning before implementation —
