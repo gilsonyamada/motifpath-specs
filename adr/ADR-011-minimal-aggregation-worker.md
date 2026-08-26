@@ -157,6 +157,9 @@ sub-feature level instead of the whole-service level.
   alongside it.
 - ADR-008: MongoDB Atlas — event log and aggregates storage — this ADR defines the concrete
   document shape written to the `aggregates` collection that ADR-008 established.
+- ADR-012: Idempotency and delivery-guarantee strategy for the tracking-event pipeline — formally
+  recognizes the transition rule in this ADR (rather than `event_id` tracking) as the Aggregation
+  Worker's idempotency mechanism, correcting an assumption ADR-006 made before this ADR existed.
 
 ---
 

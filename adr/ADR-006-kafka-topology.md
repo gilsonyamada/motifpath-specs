@@ -72,7 +72,7 @@ ADR-011.
 - **New AWS bill line.** `kafka.t3.small` on MSK (3-broker minimum) costs approximately $46/month. This is the first paid infrastructure addition beyond the base stack defined by the deployment pipeline.
 - **No per-event-type retention control.** A single topic cannot apply different retention periods to lesson vs. exercise events. If retention requirements diverge — e.g., a regulatory hold on lesson completions — a topic split will be required.
 - **Partition count is fixed post-creation.** 12 partitions is a safe choice, but increasing it later disrupts the `student_id` → partition mapping during the rebalance window, potentially reordering in-flight events. Reducing partitions is not supported.
-- **At-least-once semantics require idempotent consumers.** The Aggregation Worker must handle duplicate messages (e.g., after a restart mid-batch). Idempotency must be keyed on `event_id`.
+- **At-least-once semantics require idempotent consumers.** The Aggregation Worker must handle duplicate messages (e.g., after a restart mid-batch). ~~Idempotency must be keyed on `event_id`~~ — superseded by ADR-012: the Aggregation Worker's idempotency is achieved via a convergent status-transition function, not `event_id` tracking.
 
 ### Neutral
 
@@ -115,6 +115,7 @@ Maximum control over version, configuration, and cost.
 - **ADR-003: OpenTelemetry Instrumentation with Deferred Backend** — explicitly deferred Kafka until a second consumer existed. This ADR fires that trigger.
 - **ADR-004: Deployment Pipeline** — EKS and AWS infrastructure model that MSK integrates with.
 - **ADR-011: Minimal Aggregation Worker for MVP Node-Completion State** — specifies the write shape and business rule for the `aggregation-worker` consumer group named here.
+- **ADR-012: Idempotency and Delivery-Guarantee Strategy for the Tracking-Event Pipeline** — corrects this ADR's assumption that consumer idempotency is keyed on `event_id`, and specifies the actual mechanism plus the Event Ingestion Service's delivery-guarantee fix.
 
 ## References
 

@@ -2,10 +2,13 @@
 
 **Task:** PB-8
 **Date:** 2026-06-12
-**Last revised:** 2026-08-26 — ADR-011 accepted (PR #11 merged); Phase 4.0 unblocked. Previous
-  revisions: ADR-011 drafted; Phase 4 reconciled against merged PB-12a/b/c specs, Phase 4.0 added.
+**Last revised:** 2026-08-26 — Phase 4.0 implemented, PR open
+  ([motifpath-core#3](https://github.com/motifpath/motifpath-core/pull/3)). Previous revisions:
+  ADR-011 accepted; ADR-011 drafted; Phase 4 reconciled against merged PB-12a/b/c specs, Phase 4.0
+  added.
 **Author:** Gilson
-**Status:** Ready (Phases 2–3 done; Phase 4.0 ready to start; Phase 4 blocked on Phase 4.0)
+**Status:** Ready (Phases 2–3 done; Phase 4.0 implemented, awaiting PR review/merge; Phase 4
+  blocked on Phase 4.0 merging)
 
 ---
 
@@ -158,7 +161,7 @@ sole Kafka consumer at MVP (`aggregation-worker` consumer group → MongoDB `agg
 original PB-8 scope deferred building it post-MVP. That gap must close before Phase 4.1+ can be
 implemented against real data instead of a mocked port.
 
-**Status:** Ready to start — ADR-011 accepted 2026-08-26 (PR #11).
+**Status:** Implemented, PR open — [motifpath-core#3](https://github.com/motifpath/motifpath-core/pull/3), not yet merged.
 
 **Branch:** `adr/PB-8/011-minimal-aggregation-worker` (spec), then `feat/PB-8/aggregation-worker` (code)
 
@@ -173,7 +176,7 @@ implemented against real data instead of a mocked port.
   - Explicitly scope out exercise-event aggregation and analytics rollups — those remain the
     full Aggregation Worker's job, still post-MVP
 - [x] ADR-006's consumer-group table and Related ADRs updated to reference ADR-011
-- [ ] Confirm no Gherkin changes needed — `student-path-view.feature` already specifies the
+- [x] Confirmed no Gherkin changes needed — `student-path-view.feature` already specifies the
   externally observable behavior this worker must produce; the worker itself has no HTTP surface
 
 **Definition of Ready check:**
@@ -184,41 +187,67 @@ implemented against real data instead of a mocked port.
 - N/A — this service has no OpenAPI surface (Kafka consumer only)
 
 #### 4.0.3 — Domain layer (`services/aggregation-worker/internal/domain/`)
-- [ ] Define `NodeCompletionStatus` enum: `not_started`, `in_progress`, `completed`
-- [ ] Define the transition rule as a pure function: `(current, eventType) -> next`, `completed`
-  is terminal and never regresses
+- [x] Define `CompletionStatus` enum: `not_started`, `in_progress`, `completed`
+- [x] Define the transition rule as a pure function `NextStatus(current, eventType) -> next`,
+  `completed` is terminal and never regresses
 
 #### 4.0.4 — Ports (`internal/ports/`)
-- [ ] `CompletionStateRepository` — `Upsert(ctx, studentID, contentNodeID, status) error`
-- [ ] `EventConsumer` — wraps the Kafka client's subscribe/commit loop
+- [x] `CompletionStateRepository` — implemented with **two** methods, not the single `Upsert`
+  originally sketched: `GetStatus(ctx, studentID, contentNodeID) (status, found, err)` and
+  `Upsert(ctx, studentID, contentNodeID, status) error`. Deliberate deviation — see below.
+- [x] `EventConsumer` (`Run(ctx) error`) and `EventHandler` (`Handle(ctx, TrackingEvent) error`) —
+  split into two small ports instead of one, so `cmd/main.go` depends on an interface for the
+  consumer loop and the Kafka adapter depends on an interface for dispatch, rather than either
+  side depending on a concrete type.
+
+  **Design note:** the transition rule needs `current` status as input, but a single `Upsert(...,
+  status)` port method gives the application layer nowhere to read `current` from. Rather than
+  push a conditional-upsert query into the Mongo adapter (fragile with `$ne` + unique-index
+  upserts), `current` is read via `GetStatus` and the monotonicity check happens in
+  `ProcessEventService.Handle` before calling `Upsert` — consistent with this repo's own
+  precedent of keeping business rules (e.g. threshold-override precedence) in the application
+  layer, not adapters. Safe without locking because ADR-006 partitions `motifpath.events` by
+  `student_id`, so one consumer instance processes a given student's events strictly in order.
 
 #### 4.0.5 — Application layer (`internal/application/`)
-- [ ] `ProcessEventService.Handle(ctx, TrackingEvent) error` — filters for lesson-family events,
-  applies the transition rule, calls `CompletionStateRepository.Upsert`
-- [ ] Table-driven unit tests: started→in_progress, resumed→in_progress, completed→completed,
+- [x] `ProcessEventService.Handle(ctx, TrackingEvent) error` — filters for lesson-family events,
+  reads current status, applies `NextStatus`, calls `Upsert` only if the value changed
+- [x] Table-driven unit tests: started→in_progress, resumed→in_progress, completed→completed,
   completed→resumed does not downgrade, duplicate event is a no-op, non-lesson events are ignored
+  — all six scenarios pass; 100% statement coverage on `internal/application/`
 
 #### 4.0.6 — Adapters
-- [ ] `KafkaEventConsumer` — subscribes to `motifpath.events`, consumer group `aggregation-worker`
-  (per ADR-006), commits offsets after successful upsert
-- [ ] `MongoCompletionStateRepository` — upserts into `aggregates`
+- [x] `KafkaEventConsumer` — subscribes to `motifpath.events`, consumer group `aggregation-worker`
+  (per ADR-006), commits offsets after successful `Handle`; a decode failure is logged and
+  committed (poison-message skip), a handler failure is logged and left uncommitted for redelivery
+- [x] `MongoCompletionStateRepository` — `GetStatus`/`Upsert` against `aggregates`, unique compound
+  index on `(student_id, content_node_id)`
 
 #### 4.0.7 — Integration tests (testcontainers)
-- [ ] Kafka + MongoDB containers: publish a `lesson.completed` event, verify the `aggregates`
-  document reaches `status: completed`
-- [ ] Verify duplicate delivery of the same event does not error and leaves status unchanged
+- [x] Kafka + MongoDB containers, full pipeline (real consumer + real application service + real
+  repository): publish a `lesson.completed` event, verify the `aggregates` document reaches
+  `status: completed`
+- [x] Verify duplicate delivery of the same event does not error and leaves status unchanged —
+  tested by republishing the same event and confirming both the final status and continued
+  processing of a subsequent, distinct event
+- [x] Bonus, not originally scoped: verified a handler failure leaves the Kafka offset uncommitted
+  and a second consumer instance joining the same group ID receives the redelivered message
 
 #### 4.0.8 — Wiring
-- [ ] Implement `cmd/main.go` — consumer group startup, graceful shutdown on SIGTERM (must commit
-  in-flight offsets before exit)
-- [ ] Add `Dockerfile`
+- [x] Implement `cmd/main.go` — consumer group startup, graceful shutdown via
+  `signal.NotifyContext`. No separate "flush in-flight offsets" step was needed: each message is
+  committed synchronously right after a successful `Handle` call, so there is never an uncommitted
+  batch to flush at shutdown — only the one message blocked in `FetchMessage`, which hasn't been
+  processed yet and is safely redelivered on restart.
+- [x] Add `Dockerfile` — builds successfully (`docker build -f services/aggregation-worker/Dockerfile .`)
 
 **Validation:**
-- [ ] A `lesson.completed` event for a known student/node results in an `aggregates` document with
-  `status: completed` within one poll interval
-- [ ] Restarting the worker mid-stream resumes from the last committed offset, not from the start
-- [ ] Coverage ≥ 80% on `services/aggregation-worker/internal/application/`
-- [ ] `make lint` passes with zero warnings
+- [x] A `lesson.completed` event for a known student/node results in an `aggregates` document with
+  `status: completed` — verified via the pipeline integration test
+- [x] Restarting the worker mid-stream resumes from the last committed offset, not from the start —
+  verified via the redelivery-on-handler-failure integration test
+- [x] Coverage ≥ 80% on `services/aggregation-worker/internal/application/` — actual: 100%
+- [x] `make lint` passes with zero warnings — 0 issues, run against the full three-service target
 
 ---
 

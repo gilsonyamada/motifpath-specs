@@ -3,6 +3,9 @@ openapi: 3.1.0
 info:
   title: Event Ingestion Service
   version: 0.1.0
+  license:
+    name: Proprietary — MotifPath internal use only
+    identifier: UNLICENSED
   description: |
     Receives student tracking events emitted by the Vue 3 SPA, validates them against
     the TrackingEvent schema, writes them synchronously to the MongoDB events collection,
@@ -32,8 +35,11 @@ paths:
         is asynchronous and is not reflected in the response status.
 
         The caller must supply the event_id. Duplicate submissions with the same
-        event_id are safe: the Aggregation Worker deduplicates on event_id, and
-        this endpoint does not reject duplicates at the HTTP layer.
+        event_id are safe: this endpoint does not reject duplicates at the HTTP
+        layer, and every downstream consumer of the resulting event is required
+        to tolerate reprocessing the same underlying fact — whether it arrives
+        under the same event_id again or, in the case of a producer mistake,
+        under a different one.
       tags:
         - Events
       requestBody:
@@ -96,6 +102,119 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
+
+  /admin/publish-outbox/{event_id}/retry:
+    post:
+      operationId: retryPublishOutboxEntry
+      summary: Manually retry a failed Kafka publish
+      description: |
+        Immediately attempts to publish the specified event to Kafka again, regardless of its
+        current retry state, and returns the outcome synchronously. Intended for an operator
+        remediating a dead-lettered entry once the underlying delivery problem (e.g. a broker
+        outage) has been resolved.
+
+        A failed retry through this endpoint leaves the entry's status unchanged rather than
+        re-enabling the automatic retry sweep — call this endpoint again, or use
+        POST /admin/publish-outbox/{event_id}/resolve, once ready.
+
+        Calling this on an entry that has already reached a terminal, successful state
+        (published or resolved_manually) is a no-op: no publish is attempted and the entry's
+        current state is returned unchanged.
+
+        Only callers with the admin role may use this endpoint.
+      tags:
+        - Admin
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The event_id of the publish_outbox entry to retry.
+      responses:
+        "200":
+          description: |
+            The retry was attempted (or skipped as a no-op). Returns the entry's resulting state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishOutboxEntry'
+        "401":
+          description: Missing or invalid Bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        "403":
+          description: The authenticated caller does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        "404":
+          description: No publish_outbox entry exists for the given event_id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
+
+  /admin/publish-outbox/{event_id}/resolve:
+    post:
+      operationId: resolvePublishOutboxEntry
+      summary: Mark a publish_outbox entry as manually resolved
+      description: |
+        Marks the specified entry as resolved_manually without attempting to publish it again,
+        for cases where an operator has confirmed the event does not need further delivery or
+        has delivered it through some other means. Distinct from a successful publish:
+        resolved_manually always means a human intervened, never that Kafka confirmed receipt.
+
+        Calling this on an entry that is already published or resolved_manually is a no-op: the
+        entry's current state is returned unchanged.
+
+        Only callers with the admin role may use this endpoint.
+      tags:
+        - Admin
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The event_id of the publish_outbox entry to resolve.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolvePublishOutboxEntryRequest'
+      responses:
+        "200":
+          description: |
+            The entry was marked resolved (or was already terminal). Returns its resulting state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishOutboxEntry'
+        "401":
+          description: Missing or invalid Bearer token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        "403":
+          description: The authenticated caller does not have the admin role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenError'
+        "404":
+          description: No publish_outbox entry exists for the given event_id.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundError'
 
   /healthz:
     get:
@@ -207,6 +326,74 @@ components:
           description: Human-readable reason for the rejection.
       required:
         - message
+
+    ForbiddenError:
+      type: object
+      description: Returned when the authenticated caller lacks permission for the requested operation.
+      properties:
+        message:
+          type: string
+          description: Human-readable reason for the denial.
+      required:
+        - message
+
+    NotFoundError:
+      type: object
+      description: Returned when the requested resource does not exist.
+      properties:
+        message:
+          type: string
+          description: Human-readable description of what was not found.
+      required:
+        - message
+
+    PublishOutboxEntry:
+      type: object
+      description: The retry-tracking record for a single tracking event's Kafka delivery.
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: The event_id this entry tracks. Matches the corresponding events collection document.
+        status:
+          type: string
+          enum:
+            - pending
+            - published
+            - dead
+            - resolved_manually
+          description: |
+            pending — still eligible for the automatic retry sweep. published — Kafka confirmed
+            receipt. dead — exhausted its automatic retry attempts and is awaiting manual action.
+            resolved_manually — an operator marked this resolved without a confirmed publish.
+        attempts:
+          type: integer
+          minimum: 0
+          description: Number of publish attempts made so far, including the initial attempt.
+        last_error:
+          type: string
+          description: |
+            Error message from the most recent failed publish attempt. Absent if no attempt has
+            failed.
+        updated_at:
+          type: string
+          format: date-time
+          description: Timestamp at which this entry was last modified.
+      required:
+        - event_id
+        - status
+        - attempts
+        - updated_at
+
+    ResolvePublishOutboxEntryRequest:
+      type: object
+      description: Optional context for why an entry is being manually resolved.
+      properties:
+        reason:
+          type: string
+          description: |
+            Human-readable explanation of why this entry no longer needs automatic retry,
+            stored on the entry for audit purposes.
 
     HealthStatus:
       type: object

@@ -3,6 +3,9 @@ openapi: 3.1.0
 info:
   title: Core Domain Service
   version: 0.4.0
+  license:
+    name: Proprietary — MotifPath internal use only
+    identifier: UNLICENSED
   description: |
     Manages the MotifPath core domain: user identity, content (nodes, challenges,
     exercises), learning paths, and student progress state.
