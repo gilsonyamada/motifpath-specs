@@ -32,8 +32,11 @@ paths:
         is asynchronous and is not reflected in the response status.
 
         The caller must supply the event_id. Duplicate submissions with the same
-        event_id are safe: the Aggregation Worker deduplicates on event_id, and
-        this endpoint does not reject duplicates at the HTTP layer.
+        event_id are safe: this endpoint does not reject duplicates at the HTTP
+        layer, and every downstream consumer of the resulting event is required
+        to tolerate reprocessing the same underlying fact — whether it arrives
+        under the same event_id again or, in the case of a producer mistake,
+        under a different one.
       tags:
         - Events
       requestBody:
