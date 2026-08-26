@@ -2,8 +2,9 @@
 
 **Task:** PB-8
 **Date:** 2026-06-12
-**Last revised:** 2026-08-25 — Phase 4 reconciled against merged PB-12a/b/c specs; added Phase 4.0
-  (minimal Aggregation Worker, pending ADR-011)
+**Last revised:** 2026-08-26 — ADR-011 drafted (minimal Aggregation Worker write shape); Phase 4.0
+  checklist updated. Previous revision (2026-08-25): Phase 4 reconciled against merged PB-12a/b/c
+  specs; added Phase 4.0.
 **Author:** Gilson
 **Status:** Ready (Phases 2–3 done; Phase 4.0 blocked on ADR-011; Phase 4 blocked on Phase 4.0)
 
@@ -51,9 +52,9 @@ merged except ADR-011, which this plan requires before Phase 4.0.
 - [x] ADR-008 — MongoDB Atlas (event log + aggregates)
 - [x] ADR-009 — Clerk Go SDK for JWT local validation (resolves Phase 3 Open Question)
 - [x] ADR-010 — Atlas CLI migration workflow (resolves Phase 4 Open Question)
-- [ ] **ADR-011 (new, not yet written)** — amends ADR-006's consumer-group table to add the
-  minimal Aggregation Worker described above. Must be decided before Phase 4.0 starts; see
-  Open Questions.
+- [ ] **ADR-011 (drafted 2026-08-26, Status: Proposed)** — amends ADR-006's consumer-group table
+  to add the minimal Aggregation Worker described above. Must move to `Accepted` before Phase 4.0
+  starts; see Open Questions.
 
 ---
 
@@ -159,13 +160,13 @@ sole Kafka consumer at MVP (`aggregation-worker` consumer group → MongoDB `agg
 original PB-8 scope deferred building it post-MVP. That gap must close before Phase 4.1+ can be
 implemented against real data instead of a mocked port.
 
-**Status:** Blocked until ADR-011 is written and decided.
+**Status:** Blocked until ADR-011 moves from `Proposed` to `Accepted` (drafted 2026-08-26).
 
 **Branch:** `adr/PB-8/011-minimal-aggregation-worker` (spec), then `feat/PB-8/aggregation-worker` (code)
 
 #### 4.0.1 — Spec (motifpath-specs)
-- [ ] Write `adr/ADR-011-minimal-aggregation-worker.md`, amending ADR-006's consumer-group table
-  with the `aggregation-worker` row's concrete write shape:
+- [x] Write `adr/ADR-011-minimal-aggregation-worker.md`, amending ADR-006's consumer-group table
+  with the `aggregation-worker` row's concrete write shape (drafted 2026-08-26, PR pending):
   - MongoDB `aggregates` document shape: `{ student_id, content_node_id, status, updated_at }`
   - Status transition rule: `lesson.started`/`lesson.resumed` → `in_progress` unless already
     `completed`; `lesson.completed` → `completed` (terminal, never downgraded)
@@ -173,12 +174,13 @@ implemented against real data instead of a mocked port.
     event is a no-op transition, consistent with ADR-006's at-least-once consequence
   - Explicitly scope out exercise-event aggregation and analytics rollups — those remain the
     full Aggregation Worker's job, still post-MVP
+- [x] ADR-006's consumer-group table and Related ADRs updated to reference ADR-011
 - [ ] Confirm no Gherkin changes needed — `student-path-view.feature` already specifies the
   externally observable behavior this worker must produce; the worker itself has no HTTP surface
 
 **Definition of Ready check:**
-- [ ] ADR-011 decided (not just proposed)
-- [ ] ADR-006's consumer-group table updated to reference ADR-011 for the write-shape detail
+- [ ] ADR-011 status moved from `Proposed` to `Accepted`
+- [x] ADR-006's consumer-group table updated to reference ADR-011 for the write-shape detail
 
 #### 4.0.2 — Code generation
 - N/A — this service has no OpenAPI surface (Kafka consumer only)
@@ -349,8 +351,8 @@ automated backup before redeploying the previous image.
 | Clerk JWT validation: use official Go SDK or raw `jwks` fetch? | Gilson | **Resolved** — ADR-009: `clerkinc/clerk-sdk-go/v2` |
 | Kafka local dev: use Redpanda (lighter) or full Confluent image? | Gilson | **Resolved** — Redpanda v24.2.7 in `docker-compose.yml` |
 | ent migration tooling: Atlas CLI or `ent migrate diff`? | Gilson | **Resolved** — ADR-010: Atlas CLI (`atlas migrate diff` + `atlas migrate lint`) |
-| Who computes per-student node completion state for `GET /students/me/path`, given ADR-006 names the Aggregation Worker as sole Kafka consumer but PB-8 scoped it out post-MVP? | Gilson | **Resolved 2026-08-25** — pull a minimal Aggregation Worker into Phase 4.0, scoped to node-completion status only. Formalize as ADR-011 before Phase 4.0 starts. |
-| ADR-011 exact `aggregates` document shape and idempotency rule | Gilson | Draft in Phase 4.0.1 — see that section for the proposed shape |
+| Who computes per-student node completion state for `GET /students/me/path`, given ADR-006 names the Aggregation Worker as sole Kafka consumer but PB-8 scoped it out post-MVP? | Gilson | **Resolved 2026-08-25** — pull a minimal Aggregation Worker into Phase 4.0, scoped to node-completion status only. Formalized as ADR-011. |
+| ADR-011 exact `aggregates` document shape and idempotency rule | Gilson | **Resolved 2026-08-26** — drafted in ADR-011: `{ student_id, content_node_id, status, updated_at }`, upsert keyed on `(student_id, content_node_id)`. Awaiting `Accepted` status. |
 
 ---
 
@@ -358,7 +360,7 @@ automated backup before redeploying the previous image.
 
 - **Spec files:** `openapi/event-ingestion-service.yaml`, `openapi/core-domain-service.yaml`, `openapi/components/schemas/`
 - **Feature files:** `features/event-ingestion/`, `features/content-management/`, `features/learning-paths/`, `features/user-registration/`
-- **ADRs:** ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011 (to be written, Phase 4.0.1)
+- **ADRs:** ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011 (drafted, pending `Accepted` status)
 - **Backlog item:** PB-8
 
 ## Lifecycle of This File

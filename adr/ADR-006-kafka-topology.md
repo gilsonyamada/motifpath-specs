@@ -42,6 +42,11 @@ The **Event Ingestion Service** is the sole Kafka producer. On receiving a valid
 
 The Aggregation Worker is the sole Kafka consumer at MVP. The group ID `aggregation-worker` is stable across restarts, enabling offset commit and controlled replay from any point in the topic.
 
+**Write shape and business rule:** This ADR fixes the topology and consumer group only. The
+concrete `aggregates` document shape, the event-to-status transition rule, and the MVP scope
+boundary (node-completion status only, not exercise scoring or analytics) are specified in
+ADR-011.
+
 ## Rationale
 
 **Single topic over one-topic-per-event-type:** At seven event types and MVP scale, a multi-topic topology adds consumer management complexity without delivering independent retention or scaling benefits that matter at this stage. An `event_type` field in every message envelope allows consumers to filter client-side. The upgrade path to domain-scoped topics (`motifpath.events.lesson`, `motifpath.events.exercise`) is additive — no topology rewrite required.
@@ -109,6 +114,7 @@ Maximum control over version, configuration, and cost.
 
 - **ADR-003: OpenTelemetry Instrumentation with Deferred Backend** — explicitly deferred Kafka until a second consumer existed. This ADR fires that trigger.
 - **ADR-004: Deployment Pipeline** — EKS and AWS infrastructure model that MSK integrates with.
+- **ADR-011: Minimal Aggregation Worker for MVP Node-Completion State** — specifies the write shape and business rule for the `aggregation-worker` consumer group named here.
 
 ## References
 
