@@ -360,3 +360,10 @@ automated backup before redeploying the previous image.
 - **Feature files:** `features/event-ingestion/`, `features/content-management/`, `features/learning-paths/`, `features/user-registration/`
 - **ADRs:** ADR-005, ADR-006, ADR-007, ADR-008, ADR-009, ADR-010, ADR-011 (to be written, Phase 4.0.1)
 - **Backlog item:** PB-8
+
+## Lifecycle of This File
+
+This plan is a working implementation artefact, not a permanent contract like an ADR or an
+OpenAPI spec. Once PB-8 fully ships (Phase 4 validated and merged), delete this file in the
+closing PR rather than leaving it to go stale — the ADRs, OpenAPI specs, and Gherkin features
+it implements remain the durable record of what was decided and why.
