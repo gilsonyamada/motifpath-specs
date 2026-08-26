@@ -1,6 +1,6 @@
 # ADR-011: Minimal Aggregation Worker for MVP Node-Completion State
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-08-26
 **Deciders:** Gilson Yamada (product/engineering lead)
 
