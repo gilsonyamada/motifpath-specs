@@ -25,6 +25,10 @@ NEVER leave TODO comments without a linked issue.
 NEVER suppress linter warnings without an inline explanation.
 
 ## Testing Principles
+TDD is mandatory across all MotifPath repos: write the failing test BEFORE any implementation
+code, then implement to make it pass. NEVER write tests after implementation — a test written
+against code you've already seen pass is biased toward that code's behavior, not the intended
+behavior, and silently rubber-stamps bugs baked into the first draft.
 Tests describe behavior, not implementation.
 A test that only passes because of mocks isn't testing anything real.
 If a test is hard to write, the code design is probably the problem.
