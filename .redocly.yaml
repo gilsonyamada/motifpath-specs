@@ -1,0 +1,16 @@
+extends:
+  - recommended
+
+rules:
+  # Every service documents a localhost server entry for local development
+  # (Devbox + docker-compose) alongside its production URL — an intentional,
+  # permanent pattern across every spec in this repo, not an accidental
+  # leftover example.com/localhost value.
+  no-server-example.com: off
+
+  # Liveness/readiness probes (security: [], no path/query params, no request
+  # body) have no request shape that can legitimately produce a 4XX response.
+  # Fabricating one would document a case that can never occur. Real
+  # client-facing endpoints still follow the 200/400/401 minimum from
+  # CLAUDE.md's OpenAPI Standards, enforced by convention and review.
+  operation-4xx-response: off
