@@ -3,7 +3,7 @@
 **Task:** PB-8 (ADR-012 Part 3 reconciliation)
 **Date:** 2026-08-27
 **Author:** Gilson Yamada
-**Status:** Draft
+**Status:** In Progress — Phase 1 (spec) and Phase 2 (backend) implemented on their branches; pending review/merge and the Phase 4 infra follow-up
 
 ---
 
@@ -47,28 +47,21 @@ Make the Event Ingestion Service's two `publish_outbox` admin endpoints authoriz
 
 **Branch:** `adr/PB-8/013-admin-role-via-core-domain` (same branch as ADR-013 — one specs PR for the whole decision)
 
-- [ ] Step 1: In `openapi/event-ingestion-service.yaml`, add a `503` response referencing a new
-  `ServiceUnavailableError` schema (or reuse an existing error shape) to both
-  `retryPublishOutboxEntry` and `resolvePublishOutboxEntry`.
-- [ ] Step 2: Update both endpoint descriptions: role is resolved from the Core Domain Service by
+- [x] Step 1: In `openapi/event-ingestion-service.yaml`, add a `503` response referencing a new
+  `ServiceUnavailableError` schema to both `retryPublishOutboxEntry` and
+  `resolvePublishOutboxEntry`.
+- [x] Step 2: Update both endpoint descriptions: role is resolved from the Core Domain Service by
   forwarding the caller's bearer token; `403` covers "not admin" and "identity not registered";
-  `503` means the Core Domain Service could not be reached to confirm the role. Keep descriptions
+  `503` means the Core Domain Service could not be reached to confirm the role. Descriptions kept
   self-sufficient — no "per ADR-013" references (OpenAPI Standards rule).
-- [ ] Step 3: Write `features/event-ingestion/publish-outbox-remediation.feature`:
-  - Happy path: an admin retries a dead-lettered entry and it publishes; an admin resolves a
-    dead-lettered entry with a reason.
-  - Edge: retry/resolve on an already-terminal entry is a no-op returning current state; resolve
-    without a reason is accepted.
-  - Failure: a caller whose role is not admin is refused; a caller with no registered MotifPath
-    identity is refused; the role cannot be confirmed because the Core Domain Service is
-    unavailable → remediation is refused as temporarily unavailable; missing token is refused.
-- [ ] Step 4: `make -C ../motifpath-core generate` dry-run equivalent — bundle + lint the spec
-  (`npx @redocly/cli lint openapi/event-ingestion-service.yaml`) so CI's OpenAPI check will pass.
+- [x] Step 3: Wrote `features/event-ingestion/publish-outbox-remediation.feature` — 2 happy path,
+  3 edge, 5 authorization-failure scenarios (the admin endpoints had no Gherkin coverage before).
+- [x] Step 4: `npx @redocly/cli lint openapi/*.yaml` and `@cucumber/gherkin-streams` both green.
 
 **Definition of Ready check:**
-- [ ] OpenAPI endpoint(s) defined (503 added, descriptions self-sufficient)
-- [ ] Gherkin: happy path + ≥2 edge cases + ≥1 failure case (met by Step 3)
-- [ ] ADR exists — ADR-013
+- [x] OpenAPI endpoint(s) defined (503 added, descriptions self-sufficient)
+- [x] Gherkin: happy path + ≥2 edge cases + ≥1 failure case (met by Step 3)
+- [x] ADR exists — ADR-013
 
 ---
 
@@ -78,41 +71,30 @@ Make the Event Ingestion Service's two `publish_outbox` admin endpoints authoriz
 
 TDD order per phase: failing test first, then implementation.
 
-- [ ] Step 1: `make generate` to regenerate `event-ingestion/internal/adapters/http/generated`
-  from the updated spec (adds the `503` response type to both admin operations).
-- [ ] Step 2: Define `ports.RoleResolver` — `ResolveRole(ctx, bearerToken string) (role string, err error)`
-  with sentinel errors `ErrIdentityNotRegistered` and `ErrRoleUnavailable`. Write the port's
-  contract test expectations into the admin service tests first.
-- [ ] Step 3: `application.AdminOutboxService` (or a thin `Authorizer`) gains an `authorize` step
-  that calls `RoleResolver`. Unit tests with a fake resolver:
-  - role `admin` → operation proceeds
-  - role `student`/`teacher` → `domain.ErrForbidden`
-  - `ErrIdentityNotRegistered` → `domain.ErrForbidden`
-  - `ErrRoleUnavailable` → a new `domain.ErrAuthorizationUnavailable`
-  Write these tests before touching the service.
-- [ ] Step 4: HTTP adapter `internal/adapters/coredomain/role_resolver.go` — an `http.Client`
-  with a 3s timeout, `GET {baseURL}/users/me` with `Authorization: Bearer <token>`, decode
-  `{"role": "..."}`; map `200`→role, `404`→`ErrIdentityNotRegistered`, `401`→`ErrRoleUnavailable`
-  (token unexpectedly rejected downstream — treat as cannot-confirm), everything else / transport
-  error / timeout → `ErrRoleUnavailable`. Testcontainers or `httptest.Server` integration test
-  covering each mapping.
-- [ ] Step 5: `internal/adapters/http/admin_handler.go` — replace `isAdmin(ctx)` string check
-  with `authorizeAdmin(ctx)` that runs the application authorize step; map
-  `domain.ErrForbidden`→`403`, `domain.ErrAuthorizationUnavailable`→`503`. The bearer token must
-  reach the handler — capture it in `ClerkAuthMiddleware` via `WithBearerToken(ctx, raw)` (new,
-  replacing `WithRole`).
-- [ ] Step 6: `internal/adapters/http/auth_middleware.go` — drop `roleClaims`,
-  `CustomClaimsConstructor`, `WithRole`; keep `sub` via `WithStudentID`; add `WithBearerToken`.
-  `internal/adapters/http/context.go` — remove `roleContextKey`/`WithRole`/`RoleFromContext`,
-  add `bearerTokenContextKey`/`WithBearerToken`/`BearerTokenFromContext`.
-- [ ] Step 7: `cmd/main.go` — `loadConfig` requires `CORE_DOMAIN_BASE_URL` (via `mustGetenv`);
-  construct the `coredomain.RoleResolver` and inject it into `AdminOutboxService` /
-  `NewHandler`.
-- [ ] Step 8: BDD — `internal/bdd/steps_admin_test.go` + register in `InitializeScenario`.
-  Add a `fakeRoleResolver` to `world_test.go` with settable role / error; steps for "an admin
-  operator", "a non-admin user", "an unregistered caller", "the Core Domain Service is
-  unavailable", and the retry/resolve When/Then steps. Wire `publish-outbox-remediation.feature`.
-- [ ] Step 9: `make lint test test:int test:bdd` all green.
+- [x] Step 1: `make generate` regenerated `event-ingestion/internal/adapters/http/generated` —
+  adds `ServiceUnavailableError` and the two `*PublishOutboxEntry503JSONResponse` types.
+- [x] Step 2: `ports.RoleResolver` — `ResolveRole(ctx, bearerToken string) (string, error)` with
+  sentinels `ErrIdentityNotRegistered` and `ErrRoleUnavailable`.
+- [x] Step 3: `application.AdminAuthorizer.RequireAdmin` is the authorize seam (tests written
+  first): `admin` → nil; other role / `ErrIdentityNotRegistered` → `domain.ErrForbidden`;
+  `ErrRoleUnavailable` / any other resolver error → `domain.ErrAuthorizationUnavailable`.
+  `AdminOutboxService.{RetryEntry,ResolveEntry}` call it before touching outbox state.
+- [x] Step 4: `internal/adapters/coredomain/role_resolver.go` — `http.Client` (3s timeout),
+  `GET {baseURL}/users/me` with the forwarded bearer token; `200`→role, `404`→
+  `ErrIdentityNotRegistered`, `401`/`5xx`/transport/timeout/malformed→`ErrRoleUnavailable`.
+  `httptest.Server` unit tests cover every mapping (95.2% coverage).
+- [x] Step 5: `admin_handler.go` — 401 when no bearer token in context; maps
+  `domain.ErrForbidden`→`403`, `domain.ErrAuthorizationUnavailable`→`503`,
+  `domain.ErrOutboxEntryNotFound`→`404`.
+- [x] Step 6: `auth_middleware.go` — dropped `roleClaims` / `CustomClaimsConstructor` /
+  `WithRole`; captures the raw bearer token via `WithBearerToken`. `context.go` —
+  `roleContextKey`→`bearerTokenContextKey`, `WithRole`/`RoleFromContext`→
+  `WithBearerToken`/`BearerTokenFromContext`.
+- [x] Step 7: `cmd/main.go` — `loadConfig` requires `CORE_DOMAIN_BASE_URL`; constructs
+  `coredomain.NewRoleResolver` → `application.NewAdminAuthorizer` → `NewAdminOutboxService`.
+- [x] Step 8: BDD — `internal/bdd/steps_admin_test.go` + `fakeRoleResolver` in `world_test.go` +
+  registered in `InitializeScenario`. 10 new scenarios, all green (30 total).
+- [x] Step 9: `make lint` (0 issues), `make test`, `make test:int`, `make test:bdd` all green.
 
 **Coverage gate:** 80% on `services/event-ingestion/internal/application/` — CI fails below this.
 
@@ -156,8 +138,8 @@ the JWT-claim check; ADR-013 would then need a superseding ADR to record the rev
 
 | Question | Owner | Resolution |
 |---|---|---|
-| Should a downstream `401` from `GET /users/me` be surfaced to the caller as `401` or folded into `503`? | Gilson | **Proposed:** fold into `ErrRoleUnavailable`→`503`. The token was already validated locally microseconds earlier; a downstream `401` means clock skew or key-rotation timing, i.e. "cannot confirm right now," not "you are unauthenticated." Revisit if it proves confusing in logs. |
-| New `ServiceUnavailableError` schema vs reuse of an existing error body? | Gilson | Open — decide during Phase 1 Step 1. Leaning toward a minimal new schema mirroring `ForbiddenError` for a consistent `{message}` shape. |
+| Should a downstream `401` from `GET /users/me` be surfaced to the caller as `401` or folded into `503`? | Gilson | **Resolved** — folded into `ErrRoleUnavailable`→`503`. The token was validated locally microseconds earlier; a downstream `401` means clock skew or key-rotation timing, i.e. "cannot confirm right now," not "you are unauthenticated." |
+| New `ServiceUnavailableError` schema vs reuse of an existing error body? | Gilson | **Resolved** — added a minimal `ServiceUnavailableError` (`{message}` shape, mirrors `ForbiddenError`). |
 
 ---
 
