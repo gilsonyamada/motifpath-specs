@@ -3,7 +3,7 @@
 **Task:** PB-8 (ADR-014)
 **Date:** 2026-08-27
 **Author:** Gilson Yamada
-**Status:** Draft
+**Status:** In Progress — Phase 1 (spec) and Phase 2 (backend) implemented on their branches; pending review/merge
 
 ---
 
@@ -45,25 +45,25 @@ Make the Event Ingestion Service validate an event's `student_id` against the ca
 
 **Branch:** `adr/PB-8/014-events-identity-resolution` (same branch as ADR-014)
 
-- [ ] Step 1: `openapi/event-ingestion-service.yaml` — add a `503` response to
+- [x] Step 1: `openapi/event-ingestion-service.yaml` — add a `503` response to
   `ingestTrackingEvent` referencing `ServiceUnavailableError` (added in ADR-013's spec work);
   reword the `BearerAuth` `securitySchemes` description: the body's `student_id` must equal the
   MotifPath `user_id` the service resolves for the caller from the Core Domain Service, not the
   raw `sub` claim; a caller with no registered profile is rejected with `401`; a `503` means the
   identity could not be resolved because the Core Domain Service was unreachable.
-- [ ] Step 2: `features/event-ingestion/ingest-tracking-event.feature` — add scenarios:
+- [x] Step 2: `features/event-ingestion/ingest-tracking-event.feature` — add scenarios:
   - a caller whose identity has never been registered may not submit events (→ authentication
     error);
   - an event is refused as temporarily unavailable when the caller's identity cannot be resolved
     (Core Domain Service unreachable);
   - (keep) the existing "token belongs to a different student" scenario — now meaning the body
     carries a `student_id` other than the caller's resolved `user_id`.
-- [ ] Step 3: `npx @redocly/cli lint openapi/*.yaml` + `@cucumber/gherkin-streams` green.
+- [x] Step 3: `npx @redocly/cli lint openapi/*.yaml` + `@cucumber/gherkin-streams` green.
 
 **Definition of Ready check:**
-- [ ] OpenAPI endpoint(s) defined (`503` added, security description self-sufficient)
-- [ ] Gherkin: happy path + ≥2 edge cases + ≥1 failure case (existing happy paths + new failures)
-- [ ] ADR exists — ADR-014
+- [x] OpenAPI endpoint(s) defined (`503` added, security description self-sufficient)
+- [x] Gherkin: happy path + ≥2 edge cases + ≥1 failure case (existing happy paths + new failures)
+- [x] ADR exists — ADR-014
 
 ---
 
@@ -73,8 +73,8 @@ Make the Event Ingestion Service validate an event's `student_id` against the ca
 
 TDD: failing test first, then implementation.
 
-- [ ] Step 1: `make generate` (picks up the `503` response type for `ingestTrackingEvent`).
-- [ ] Step 2: Widen the shared Core Domain client.
+- [x] Step 1: `make generate` (picks up the `503` response type for `ingestTrackingEvent`).
+- [x] Step 2: Widen the shared Core Domain client.
   - `ports`: rename `RoleResolver` → `ProfileResolver`, method
     `ResolveProfile(ctx, bearerToken) (Profile, error)` where `Profile{UserID, Role string}`.
     Rename `ErrRoleUnavailable` → `ErrProfileUnavailable` (keep `ErrIdentityNotRegistered`).
@@ -82,33 +82,33 @@ TDD: failing test first, then implementation.
     decode `{user_id, role}` from `GET /users/me`; `200` with an empty `user_id` → `ErrProfileUnavailable`.
   - `application.AdminAuthorizer`: depend on `ports.ProfileResolver`, read `.Role`. Mechanical
     test updates (`fakeRoleResolver` → `fakeProfileResolver`).
-- [ ] Step 3: `ports.IdentityResolver` — `ResolveUserID(ctx, sub, bearerToken) (string, error)`.
+- [x] Step 3: `ports.IdentityResolver` — `ResolveUserID(ctx, sub, bearerToken) (string, error)`.
   Failing tests first: cache hit returns without calling the client; cache miss calls the client
   and caches; `ErrIdentityNotRegistered` and `ErrProfileUnavailable` propagate and are **not**
   cached; entries expire after the TTL; LRU eviction past the cap.
-- [ ] Step 4: `adapters/coredomain.CachingIdentityResolver` — wraps a `ports.ProfileResolver`,
+- [x] Step 4: `adapters/coredomain.CachingIdentityResolver` — wraps a `ports.ProfileResolver`,
   bounded LRU (10k) + 1h TTL keyed on `sub`, stores only `Profile.UserID`. Implements
   `ports.IdentityResolver`. Use a small dependency-free LRU or `hashicorp/golang-lru/v2` if
   already in `go.sum` — decide during implementation.
-- [ ] Step 5: Move the payload identity check into the application layer.
+- [x] Step 5: Move the payload identity check into the application layer.
   - `IngestEventService.Ingest(ctx, callerUserID string, event)` — validate
     `event.Base().StudentID == callerUserID`, else `domain.ErrIdentityMismatch` (new sentinel).
   - Update `IngestEventService` unit tests for the new parameter + the mismatch case.
-- [ ] Step 6: `adapters/http` — `IngestTrackingEvent` handler:
+- [x] Step 6: `adapters/http` — `IngestTrackingEvent` handler:
   - read `sub` (`StudentIDFromContext`) and token (`BearerTokenFromContext`); `401` if either
     absent.
   - `userID, err := identityResolver.ResolveUserID(ctx, sub, token)`; map
     `ErrIdentityNotRegistered` → `401`, `ErrProfileUnavailable` → `503`, else return `err`.
   - `h.service.Ingest(ctx, userID, event)`; map `domain.ErrIdentityMismatch` → `401`.
   - drop the inline `event.Base().StudentID != authenticatedStudentID` check.
-- [ ] Step 7: `cmd/main.go` — build `coredomain.Client` → `CachingIdentityResolver`, inject into
+- [x] Step 7: `cmd/main.go` — build `coredomain.Client` → `CachingIdentityResolver`, inject into
   the handler; the same `Client` still feeds `AdminAuthorizer`. `CORE_DOMAIN_BASE_URL` already
   required (ADR-013).
-- [ ] Step 8: BDD — `steps_ingest_test.go` / `world_test.go`: a `fakeIdentityResolver` (settable
+- [x] Step 8: BDD — `steps_ingest_test.go` / `world_test.go`: a `fakeIdentityResolver` (settable
   `user_id` / error); steps for "identity has never been registered" and "identity cannot be
   resolved"; the existing auth steps keep working (default resolver returns the token student's
   `user_id`). Wire the two new scenarios.
-- [ ] Step 9: `make lint test test:int test:bdd` green; coverage ≥ 80% on
+- [x] Step 9: `make lint test test:int test:bdd` green; coverage ≥ 80% on
   `internal/application/`.
 
 **Coverage gate:** 80% on `services/event-ingestion/internal/application/`.
@@ -148,8 +148,8 @@ that the intended state again.
 
 | Question | Owner | Resolution |
 |---|---|---|
-| Dependency-free LRU vs. `hashicorp/golang-lru/v2`? | Gilson | Decide in Phase 2 Step 4 — prefer the library if a transitive dep already pulls it in; otherwise a ~30-line TTL map is enough at MVP. |
-| Should a cold-miss `503` also emit a structured error log (like ADR-012's dead-letter)? | Gilson | **Proposed:** yes, `logger.Warn` with `sub` — a spike of these is the signal that Core Domain Service is unhealthy. |
+| Dependency-free LRU vs. `hashicorp/golang-lru/v2`? | Gilson | **Resolved** — dependency-free. Only `golang-lru` v1 is present (transitively); a ~40-line mutex-guarded TTL map with coarse overflow handling is enough at MVP and adds no direct dependency. |
+| Should a cold-miss `503` also emit a structured error log? | Gilson | **Deferred** — the `Handler` struct carries no logger today, and a `503` is already visible through ADR-003's HTTP-level OTel/CloudWatch telemetry. A dedicated `logger.Warn` with `sub` can be added once the handler takes a logger. |
 
 ## Related
 
