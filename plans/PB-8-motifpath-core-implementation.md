@@ -2,13 +2,15 @@
 
 **Task:** PB-8
 **Date:** 2026-06-12
-**Last revised:** 2026-08-26 — Phase 4.0 implemented, PR open
-  ([motifpath-core#3](https://github.com/motifpath/motifpath-core/pull/3)). Previous revisions:
-  ADR-011 accepted; ADR-011 drafted; Phase 4 reconciled against merged PB-12a/b/c specs, Phase 4.0
-  added.
+**Last revised:** 2026-08-26 — Phase 4 (Core Domain Service) implemented in full, branch
+  `feat/PB-8/core-domain-service`, not yet opened as a PR. Previous revisions: Phase 4.0 implemented
+  (PR #3, merged); ADR-011 accepted; ADR-011 drafted; Phase 4 reconciled against merged PB-12a/b/c
+  specs, Phase 4.0 added.
 **Author:** Gilson
-**Status:** Ready (Phases 2–3 done; Phase 4.0 implemented, awaiting PR review/merge; Phase 4
-  blocked on Phase 4.0 merging)
+**Status:** Phases 2–4.0 done and merged. Phase 4 (all of 4.1–4.9) implemented and passing locally
+  (91.7% coverage on `internal/application/`, 89/89 BDD scenarios, all integration tests, zero lint
+  warnings) — awaiting commit/PR. See "Notes from Phase 4 implementation" below for two items
+  discovered during implementation that need a decision before merge.
 
 ---
 
@@ -265,8 +267,8 @@ earlier steps).
   changed since.
 
 #### 4.2 — ent schema + migrations
-- [ ] Initialize `ent` schema in `internal/adapters/repo/ent/schema/` (directory currently empty)
-- [ ] Define ent schemas matching the actual OpenAPI components — **not** the entities listed in
+- [x] Initialize `ent` schema in `internal/adapters/repo/ent/schema/` (directory currently empty)
+- [x] Define ent schemas matching the actual OpenAPI components — **not** the entities listed in
   an earlier draft of this plan (`ThresholdOverride` and `StudentNodeState` do not exist in the
   merged spec):
   - `User` (`user_id`, `role` enum: student/teacher/admin, `registered_at`)
@@ -283,35 +285,35 @@ earlier steps).
   - `PathAssignment` (`assignment_id`, `student_id`, `learning_path_id`, `assigned_by`,
     `assigned_at`) — one active assignment per student for MVP; assigning a new path replaces
     the existing row rather than appending
-- [ ] Generate ent code (`go generate`)
-- [ ] Write initial migration via `make migrate:diff name=core-domain-initial-schema`
+- [x] Generate ent code (`go generate`)
+- [x] Write initial migration via `make migrate:diff name=core-domain-initial-schema`
   (Atlas CLI workflow — ADR-010)
 
 #### 4.3 — Domain layer (`internal/domain/`)
-- [ ] Define entities and value objects: `User`, `ContentNode` + `Classification`, `Challenge`,
+- [x] Define entities and value objects: `User`, `ContentNode` + `Classification`, `Challenge`,
   `Exercise`, `ExpandedContent` (with the video/article field-group invariant enforced in the
   constructor, not just at the HTTP boundary), `LearningPath` + `LearningPathItem`, `PathAssignment`
-- [ ] Define `StudentPathItem` as a read-model value object combining `LearningPathItem` with a
+- [x] Define `StudentPathItem` as a read-model value object combining `LearningPathItem` with a
   `NodeCompletionStatus` looked up from the Phase 4.0 worker's output — position 1 is `locked`
   only if a prior item isn't `completed`; `current_position` is the first non-`completed` item
-- [ ] Define domain errors: `ErrNotFound`, `ErrForbidden`, `ErrAlreadyExists`, `ErrValidation`
+- [x] Define domain errors: `ErrNotFound`, `ErrForbidden`, `ErrAlreadyExists`, `ErrValidation`
 
 #### 4.4 — Ports (`internal/ports/`)
-- [ ] One repository interface per aggregate: `UserRepository`, `ContentNodeRepository`,
+- [x] One repository interface per aggregate: `UserRepository`, `ContentNodeRepository`,
   `ChallengeRepository`, `ExerciseRepository`, `ExpandedContentRepository`,
   `LearningPathRepository`, `PathAssignmentRepository`
-- [ ] `CompletionStateReader` — `GetStatuses(ctx, studentID, []contentNodeID) (map[contentNodeID]NodeCompletionStatus, error)`,
+- [x] `CompletionStateReader` — `GetStatuses(ctx, studentID, []contentNodeID) (map[contentNodeID]NodeCompletionStatus, error)`,
   backed by the Phase 4.0 worker's MongoDB `aggregates` collection (read-only from this service's
   perspective)
 
 #### 4.5 — Application layer (`internal/application/`)
-- [ ] `IdentityService` — `RegisterUser`, `GetMyProfile`
-- [ ] `ContentService` — `CreateContentNode`, `GetContentNode`, `CreateExpandedContent`, `ListExpandedContent`, `GetExpandedContent`
-- [ ] `ChallengeService` — `CreateChallenge`, `GetChallenge`, `CreateExercise`, `GetExercise`
-- [ ] `LearningPathService` — `CreateLearningPath`, `GetLearningPath`
-- [ ] `PathAssignmentService` — `AssignLearningPath`, `GetMyPath` (composes `PathAssignmentRepository`
+- [x] `IdentityService` — `RegisterUser`, `GetMyProfile`
+- [x] `ContentService` — `CreateContentNode`, `GetContentNode`, `CreateExpandedContent`, `ListExpandedContent`, `GetExpandedContent`
+- [x] `ChallengeService` — `CreateChallenge`, `GetChallenge`, `CreateExercise`, `GetExercise`
+- [x] `LearningPathService` — `CreateLearningPath`, `GetLearningPath`
+- [x] `PathAssignmentService` — `AssignLearningPath`, `GetMyPath` (composes `PathAssignmentRepository`
   + `LearningPathRepository` + `CompletionStateReader`)
-- [ ] Write table-driven unit tests for each service, covering all Gherkin scenarios:
+- [x] Write table-driven unit tests for each service, covering all Gherkin scenarios:
   - Happy paths (teacher/admin/student roles as appropriate)
   - Authorisation failures (wrong role, no token)
   - Not-found cases
@@ -320,15 +322,15 @@ earlier steps).
     `CompletionStateReader`
 
 #### 4.6 — Adapters
-- [ ] Implement `EntUserRepository`, `EntContentNodeRepository`, etc. (one file per aggregate)
-- [ ] Implement `MongoCompletionStateReader` (reads the same `aggregates` collection Phase 4.0 writes)
-- [ ] Implement HTTP handlers — one handler struct, one method per operation
+- [x] Implement `EntUserRepository`, `EntContentNodeRepository`, etc. (one file per aggregate)
+- [x] Implement `MongoCompletionStateReader` (reads the same `aggregates` collection Phase 4.0 writes)
+- [x] Implement HTTP handlers — one handler struct, one method per operation
   - RBAC enforcement: teacher/admin/student gates as per Gherkin scenarios
   - Map domain errors → HTTP status codes (404 → not found, 403 → forbidden, 400 → bad request,
     409 → conflict on duplicate registration)
 
 #### 4.7 — BDD (godog)
-- [ ] Write step definitions for all feature files in `features/`:
+- [x] Write step definitions for all feature files in `features/`:
   - `user-registration/register-user.feature`
   - `content-management/content-nodes.feature`
   - `content-management/challenges.feature`
@@ -337,29 +339,52 @@ earlier steps).
   - `learning-paths/learning-paths.feature`
   - `learning-paths/path-assignments.feature`
   - `learning-paths/student-path-view.feature`
-- [ ] Run `make test:bdd` — all scenarios green
+- [x] Run `make test:bdd` — all scenarios green
 
 #### 4.8 — Integration tests (testcontainers)
-- [ ] Postgres container: verify migrations apply cleanly on startup
-- [ ] MongoDB container: verify `GetMyPath` reflects completion state written by a simulated
+- [x] Postgres container: verify migrations apply cleanly on startup
+- [x] MongoDB container: verify `GetMyPath` reflects completion state written by a simulated
   Phase 4.0 worker document
-- [ ] Verify end-to-end: create node → create challenge → create learning path → assign to
+- [x] Verify end-to-end: create node → create challenge → create learning path → assign to
   student → get student path
-- [ ] Verify replacing an active path assignment resets progress (new assignment, no carryover)
-- [ ] Run `make test:int` — all tests green
+- [x] Verify replacing an active path assignment resets progress (new assignment, no carryover)
+- [x] Run `make test:int` — all tests green
 
 #### 4.9 — Wiring
-- [ ] Implement `cmd/main.go` — ent client + Atlas migration-on-startup guarded by the
+- [x] Implement `cmd/main.go` — ent client + Atlas migration-on-startup guarded by the
   distributed lock (ADR-005), Mongo client for `CompletionStateReader`, Clerk JWT middleware
   (ADR-009), graceful shutdown
-- [ ] Add `Dockerfile`
+- [x] Add `Dockerfile`
 
 **Validation:**
-- [ ] All 15 endpoints return expected responses per Gherkin scenarios
-- [ ] `GET /students/me/path` returns correct `completed`/`in_progress`/`not_started`/`locked`
+- [x] All 15 endpoints return expected responses per Gherkin scenarios
+- [x] `GET /students/me/path` returns correct `completed`/`in_progress`/`not_started`/`locked`
   state for all five scenarios in `student-path-view.feature`
-- [ ] Coverage ≥ 80% on `services/core-domain/internal/application/`
-- [ ] `make lint` passes with zero warnings
+- [x] Coverage ≥ 80% on `services/core-domain/internal/application/` — actual: 91.7%
+- [x] `make lint` passes with zero warnings — 0 issues across all three services
+
+### Notes from Phase 4 implementation
+
+- **Gherkin syntax bug found and fixed in this repo**: five feature files
+  (`content-management/{challenges,content-nodes,exercises,expanded-content}.feature`,
+  `learning-paths/learning-paths.feature`) used a two-line step-wrapping style for long step text
+  that standard Gherkin does not support — godog's parser rejected all five outright. Fixed on
+  branch `fix/PB-8/gherkin-step-continuation-syntax` by joining each wrapped continuation back onto
+  its step line (meaning-preserving, no scenario text changed). This must merge before any BDD
+  suite in `motifpath-core` can run these features at all.
+- **Atlas CLI's `ent://` schema loader is gone in current Atlas versions.** `make migrate:diff`
+  originally shelled out to `atlas migrate diff --to "ent://..."` per ADR-010's literal workflow;
+  the installed Atlas build (and, per API surface, released Atlas 1.x generally) rejects that
+  scheme, pointing at a provider-based replacement. Rather than depend on an external provider
+  package, `make migrate:diff` now runs a small in-repo tool
+  (`services/core-domain/cmd/entmigrate`) that uses ent's own `sql/versioned-migration` codegen
+  feature to compute the diff against a scratch testcontainers Postgres — same reviewable-SQL
+  output ADR-005/010 require, different generation mechanism. `atlas migrate apply`/`lint` (used at
+  startup and in CI) are unaffected — they only read the plain SQL files, no `ent://` involved.
+- **event-ingestion's role-claim debt (ADR-012 Part 3) is now unblocked but not paid down.**
+  `User.role` has a real implementation for the first time (this service). event-ingestion's admin
+  endpoints still trust a Clerk JWT custom claim for role instead of checking against this service.
+  Follow-up task, not part of this one.
 
 ---
 
