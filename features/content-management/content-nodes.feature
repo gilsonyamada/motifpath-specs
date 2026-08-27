@@ -10,22 +10,19 @@ Feature: Manage content nodes
 
   Scenario: A teacher creates a video content node with classification
     Given "bob" is authenticated as a teacher
-    When "bob" creates a video content node titled "Introduction to Triad Shapes"
-      with skill "triad-shapes", concept "chord-theory", and difficulty "beginner"
+    When "bob" creates a video content node titled "Introduction to Triad Shapes" with skill "triad-shapes", concept "chord-theory", and difficulty "beginner"
     Then the content node is created and assigned a stable identifier
     And the classification review state is "pending"
     And the content node records "bob" as the owner
 
   Scenario: A teacher creates an article content node
     Given "bob" is authenticated as a teacher
-    When "bob" creates an article content node titled "Understanding Chord Theory"
-      with skill "chord-transitions", concept "chord-theory", and difficulty "intermediate"
+    When "bob" creates an article content node titled "Understanding Chord Theory" with skill "chord-transitions", concept "chord-theory", and difficulty "intermediate"
     Then the content node is created and assigned a stable identifier
 
   Scenario: An admin creates a content node
     Given "admin" is authenticated as an admin
-    When "admin" creates a video content node titled "Sweep Picking Fundamentals"
-      with skill "sweep-picking", concept "technique", and difficulty "advanced"
+    When "admin" creates a video content node titled "Sweep Picking Fundamentals" with skill "sweep-picking", concept "technique", and difficulty "advanced"
     Then the content node is created and assigned a stable identifier
 
   Scenario: Any authenticated user retrieves a content node by ID

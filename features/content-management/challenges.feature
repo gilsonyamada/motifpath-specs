@@ -11,22 +11,19 @@ Feature: Manage challenges
 
   Scenario: A teacher creates a challenge with a subject tag and pass threshold
     Given "bob" is authenticated as a teacher
-    When "bob" creates a challenge for "intro-to-triads" with subject tag "triad-shapes"
-      and pass threshold 70
+    When "bob" creates a challenge for "intro-to-triads" with subject tag "triad-shapes" and pass threshold 70
     Then the challenge is created and assigned a stable identifier
     And the challenge records "intro-to-triads" as its parent content node
 
   Scenario: A teacher creates a challenge with a remediation target
     Given "bob" is authenticated as a teacher
     And a content node "triad-remediation" exists in the system
-    When "bob" creates a challenge for "intro-to-triads" with subject tag "triad-shapes",
-      pass threshold 70, and remediation target "triad-remediation"
+    When "bob" creates a challenge for "intro-to-triads" with subject tag "triad-shapes", pass threshold 70, and remediation target "triad-remediation"
     Then the challenge is created with the remediation target recorded
 
   Scenario: An admin creates a challenge
     Given "admin" is authenticated as an admin
-    When "admin" creates a challenge for "intro-to-triads" with subject tag "chord-theory"
-      and pass threshold 80
+    When "admin" creates a challenge for "intro-to-triads" with subject tag "chord-theory" and pass threshold 80
     Then the challenge is created and assigned a stable identifier
 
   Scenario: Any authenticated user retrieves a challenge by ID

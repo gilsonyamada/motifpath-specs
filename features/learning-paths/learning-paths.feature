@@ -11,16 +11,14 @@ Feature: Manage learning paths
 
   Scenario: A teacher creates a learning path with multiple content nodes
     Given "bob" is authenticated as a teacher
-    When "bob" creates a learning path titled "Beginner Guitar — Week 1"
-      with items in order: "node-01", "node-02", "node-03"
+    When "bob" creates a learning path titled "Beginner Guitar — Week 1" with items in order: "node-01", "node-02", "node-03"
     Then the learning path is created and assigned a stable identifier
     And the items are returned with positions 1, 2, and 3 respectively
     And the path records "bob" as the owner
 
   Scenario: An admin creates a learning path
     Given "admin" is authenticated as an admin
-    When "admin" creates a learning path titled "Advanced Techniques — Month 1"
-      with items in order: "node-01", "node-02"
+    When "admin" creates a learning path titled "Advanced Techniques — Month 1" with items in order: "node-01", "node-02"
     Then the learning path is created and assigned a stable identifier
 
   Scenario: A teacher retrieves a learning path by ID
