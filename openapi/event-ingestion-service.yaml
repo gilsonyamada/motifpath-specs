@@ -121,7 +121,12 @@ paths:
         (published or resolved_manually) is a no-op: no publish is attempted and the entry's
         current state is returned unchanged.
 
-        Only callers with the admin role may use this endpoint.
+        Authorization: the caller must hold the admin role. The service establishes this by
+        calling the Core Domain Service with the caller's own bearer token and reading the role
+        on the profile it returns — a role claim in the JWT itself is not trusted. A caller
+        whose role is not admin, or who has no registered profile, is refused with 403. If the
+        role cannot be established because the Core Domain Service is unreachable, the request
+        is refused with 503 and no publish is attempted.
       tags:
         - Admin
       parameters:
@@ -147,7 +152,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
         "403":
-          description: The authenticated caller does not have the admin role.
+          description: |
+            The caller's role is not admin, or the caller has no registered profile.
           content:
             application/json:
               schema:
@@ -158,6 +164,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        "503":
+          description: |
+            The caller's role could not be established because the Core Domain Service
+            was unreachable. No publish was attempted; retry once it recovers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableError'
 
   /admin/publish-outbox/{event_id}/resolve:
     post:
@@ -172,7 +186,12 @@ paths:
         Calling this on an entry that is already published or resolved_manually is a no-op: the
         entry's current state is returned unchanged.
 
-        Only callers with the admin role may use this endpoint.
+        Authorization: the caller must hold the admin role. The service establishes this by
+        calling the Core Domain Service with the caller's own bearer token and reading the role
+        on the profile it returns — a role claim in the JWT itself is not trusted. A caller
+        whose role is not admin, or who has no registered profile, is refused with 403. If the
+        role cannot be established because the Core Domain Service is unreachable, the request
+        is refused with 503 and the entry is left unchanged.
       tags:
         - Admin
       parameters:
@@ -204,7 +223,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
         "403":
-          description: The authenticated caller does not have the admin role.
+          description: |
+            The caller's role is not admin, or the caller has no registered profile.
           content:
             application/json:
               schema:
@@ -215,6 +235,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
+        "503":
+          description: |
+            The caller's role could not be established because the Core Domain Service
+            was unreachable. The entry was left unchanged; retry once it recovers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableError'
 
   /healthz:
     get:
@@ -344,6 +372,19 @@ components:
         message:
           type: string
           description: Human-readable description of what was not found.
+      required:
+        - message
+
+    ServiceUnavailableError:
+      type: object
+      description: |
+        Returned when the service cannot complete the request because a dependency it
+        needs is temporarily unreachable. The request can be retried once the dependency
+        recovers.
+      properties:
+        message:
+          type: string
+          description: Human-readable description of which dependency was unavailable.
       required:
         - message
 
