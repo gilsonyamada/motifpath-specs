@@ -1,6 +1,6 @@
 # ADR-013: Event Ingestion Service Resolves Admin Role from Core Domain Service
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-08-27
 **Deciders:** Gilson Yamada (product/engineering lead)
 
