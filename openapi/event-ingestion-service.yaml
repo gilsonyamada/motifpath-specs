@@ -96,12 +96,23 @@ paths:
                 $ref: '#/components/schemas/ValidationError'
         "401":
           description: |
-            Missing or invalid Bearer token. The student must be authenticated
-            via Clerk before submitting events.
+            The request could not be attributed to a registered student: the Bearer
+            token is missing or invalid, the token's identity has never been
+            registered with MotifPath, or the event's student_id is not the caller's
+            own MotifPath user id. The event was not stored.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnauthorizedError'
+        "503":
+          description: |
+            The caller's MotifPath identity could not be resolved because the Core
+            Domain Service was unreachable, and no cached result was available. The
+            event was not stored; resubmit it once the service recovers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableError'
 
   /admin/publish-outbox/{event_id}/retry:
     post:
@@ -295,9 +306,13 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        Clerk-issued JWT validated locally by the service on every request.
-        The student_id claim in the JWT must match the student_id field in the
-        event payload. Mismatches are rejected with 401.
+        Clerk-issued JWT validated locally by the service on every request. The
+        service resolves the caller's MotifPath user id from the token's identity
+        via the Core Domain Service (the result is cached, so the resolution is not
+        repeated per event). The student_id in the event payload must equal that
+        resolved user id — not the raw token subject. A token whose identity is not
+        a registered MotifPath user, or a payload student_id that is not the
+        caller's own user id, is rejected with 401.
 
   schemas:
     TrackingEvent:

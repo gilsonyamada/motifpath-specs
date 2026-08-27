@@ -77,6 +77,17 @@ Feature: Ingest student tracking events
     When "alice" submits an event that identifies student "bob" as the author
     Then the submission is refused with an authentication error
 
+  Scenario: Submission is refused when the caller's identity has never been registered with MotifPath
+    Given a caller holds a valid token whose identity has never been registered
+    When that caller submits a lesson.started event
+    Then the submission is refused with an authentication error
+
+  Scenario: Submission is refused as temporarily unavailable when the caller's identity cannot be resolved
+    Given student "alice" is authenticated with a valid session
+    But the caller's MotifPath identity cannot currently be resolved
+    When "alice" submits a lesson.started event for video content node "intro-to-chords"
+    Then the submission is refused as temporarily unavailable
+
   # ── Validation failures ─────────────────────────────────────────────────────
 
   Scenario: Event submitted without an event type is rejected
