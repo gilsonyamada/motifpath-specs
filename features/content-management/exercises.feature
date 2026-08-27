@@ -13,15 +13,13 @@ Feature: Manage exercises
 
   Scenario: A teacher creates a fretboard region exercise
     Given "bob" is authenticated as a teacher
-    When "bob" creates a fretboard_region exercise for "triad-challenge"
-      with prompt "Identify the root position of a C major triad"
+    When "bob" creates a fretboard_region exercise for "triad-challenge" with prompt "Identify the root position of a C major triad"
     Then the exercise is created and assigned a stable identifier
     And the exercise records "triad-challenge" as its parent challenge
 
   Scenario: An admin creates an exercise
     Given "admin" is authenticated as an admin
-    When "admin" creates a fretboard_region exercise for "triad-challenge"
-      with prompt "Tap the first inversion of a G major triad"
+    When "admin" creates a fretboard_region exercise for "triad-challenge" with prompt "Tap the first inversion of a G major triad"
     Then the exercise is created and assigned a stable identifier
 
   Scenario: A teacher creates multiple exercises within the same challenge

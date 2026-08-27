@@ -12,16 +12,14 @@ Feature: Manage expanded content
   Scenario: A teacher adds an image to a video lesson at a specific timestamp
     Given "bob" is authenticated as a teacher
     And a video content node "intro-to-triads" exists in the system
-    When "bob" adds an image to "intro-to-triads" with trigger_at_seconds 150
-      and hide_at_seconds 165
+    When "bob" adds an image to "intro-to-triads" with trigger_at_seconds 150 and hide_at_seconds 165
     Then the expanded content item is created and assigned a stable identifier
     And the item records "intro-to-triads" as its parent content node
 
   Scenario: A teacher adds a GIF to a video lesson
     Given "bob" is authenticated as a teacher
     And a video content node "intro-to-triads" exists in the system
-    When "bob" adds a GIF to "intro-to-triads" with trigger_at_seconds 90
-      and hide_at_seconds 100
+    When "bob" adds a GIF to "intro-to-triads" with trigger_at_seconds 90 and hide_at_seconds 100
     Then the expanded content item is created and assigned a stable identifier
 
   Scenario: A teacher adds multiple expanded content items to a video lesson
@@ -41,15 +39,13 @@ Feature: Manage expanded content
   Scenario: A teacher adds an image to an article at a specific paragraph
     Given "bob" is authenticated as a teacher
     And an article content node "chord-theory-explained" exists in the system
-    When "bob" adds an image to "chord-theory-explained" with trigger_at_paragraph 3
-      and duration_ms 8000
+    When "bob" adds an image to "chord-theory-explained" with trigger_at_paragraph 3 and duration_ms 8000
     Then the expanded content item is created and assigned a stable identifier
 
   Scenario: A teacher adds a GIF to an article at the first paragraph
     Given "bob" is authenticated as a teacher
     And an article content node "chord-theory-explained" exists in the system
-    When "bob" adds a GIF to "chord-theory-explained" with trigger_at_paragraph 1
-      and duration_ms 5000
+    When "bob" adds a GIF to "chord-theory-explained" with trigger_at_paragraph 1 and duration_ms 5000
     Then the expanded content item is created and assigned a stable identifier
 
   Scenario: Listing expanded content for an article returns items ordered by paragraph
@@ -85,16 +81,14 @@ Feature: Manage expanded content
   Scenario: Adding expanded content to a video node without trigger_at_seconds is rejected
     Given "bob" is authenticated as a teacher
     And a video content node "intro-to-triads" exists in the system
-    When "bob" submits a create expanded content request with trigger_at_paragraph 3
-      and duration_ms 5000 for a video content node
+    When "bob" submits a create expanded content request with trigger_at_paragraph 3 and duration_ms 5000 for a video content node
     Then the request is rejected as invalid
     And the rejection identifies "trigger_at_seconds" as the source of the error
 
   Scenario: Adding expanded content to a video node where hide_at_seconds is not greater than trigger_at_seconds is rejected
     Given "bob" is authenticated as a teacher
     And a video content node "intro-to-triads" exists in the system
-    When "bob" submits a create expanded content request with trigger_at_seconds 150
-      and hide_at_seconds 150
+    When "bob" submits a create expanded content request with trigger_at_seconds 150 and hide_at_seconds 150
     Then the request is rejected as invalid
     And the rejection identifies "hide_at_seconds" as the source of the error
 
@@ -103,8 +97,7 @@ Feature: Manage expanded content
   Scenario: Adding expanded content to an article node without trigger_at_paragraph is rejected
     Given "bob" is authenticated as a teacher
     And an article content node "chord-theory-explained" exists in the system
-    When "bob" submits a create expanded content request with trigger_at_seconds 90
-      and hide_at_seconds 100 for an article content node
+    When "bob" submits a create expanded content request with trigger_at_seconds 90 and hide_at_seconds 100 for an article content node
     Then the request is rejected as invalid
     And the rejection identifies "trigger_at_paragraph" as the source of the error
 
@@ -118,8 +111,7 @@ Feature: Manage expanded content
   Scenario: Adding expanded content to an article node without duration_ms is rejected
     Given "bob" is authenticated as a teacher
     And an article content node "chord-theory-explained" exists in the system
-    When "bob" submits a create expanded content request with trigger_at_paragraph 3
-      and duration_ms omitted
+    When "bob" submits a create expanded content request with trigger_at_paragraph 3 and duration_ms omitted
     Then the request is rejected as invalid
     And the rejection identifies "duration_ms" as the source of the error
 
