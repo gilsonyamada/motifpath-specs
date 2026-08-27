@@ -1,6 +1,6 @@
 # ADR-012: Idempotency and Delivery-Guarantee Strategy for the Tracking-Event Pipeline
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-08-26
 **Deciders:** Gilson Yamada (product/engineering lead)
 
