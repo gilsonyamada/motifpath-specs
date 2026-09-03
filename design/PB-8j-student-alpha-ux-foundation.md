@@ -5,8 +5,28 @@
 **Author:** Gilson
 **Status:** Draft
 **Fidelity:** Wireframe / structural — not visual design
+**Revised:** 2026-09-03 — incorporates the wireframe-canvas review (see Revision note)
 
 ---
+
+## Revision — 2026-09-03
+
+The first wireframe canvas review changed five things. Details are folded into the sections
+below; **ADR-015** carries the decisions and their rationale.
+
+1. **The challenge is the node's practice step, not a peer screen.** S6 owns the content
+   *and* the challenge; S7 stays a route but is entered from within S6.
+2. **The path groups its own steps into competency-named sections.** A path step carries an
+   optional teacher-set section label; the path view groups consecutive steps that share
+   one. The student path stays self-contained — **no dependency on the knowledge graph.**
+3. **All time-box framing is removed.** No "Week N", no schedule, no due dates on any
+   student-facing surface.
+4. **S6 is video-first, with timed complementary resources.** Cues fire at points in
+   playback without stopping the video; each cue has a focus mode (video-primary or
+   resource-primary).
+5. **S6 and S7 are responsive; the "single column, no multi-column" rule no longer applies
+   to them.** Portrait is a single column; landscape and wider viewports get a two-region
+   layout. No forced rotation. S7 is visually immersive but stays inside the app shell.
 
 ## Purpose
 
@@ -33,7 +53,9 @@ typography, or spacing beyond token roles.
   `motifpath-brand/colors.json` and `motifpath-web/tailwind.config.ts`. This doc defines the
   *roles*; the hex values are a parallel `motifpath-brand` task
 - Animation and transitions
-- Any teacher-facing UI
+- Any teacher-facing UI — including the content-creator / practice-node authoring flow. That
+  is **PB-8i** (content & classification concierge tooling), a separate slice with its own
+  wireframes; it must not be folded into this canvas.
 - The PB-8h admin observation view — different audience; it reuses the shell but not this
   student IA
 
@@ -55,23 +77,30 @@ next, let them do it, and show progress.**
 | S1 | Sign in | `/sign-in` | PB-8c | Google auth via Clerk `<SignIn />` | Continue with Google | loading |
 | S2 | Registering | `/welcome` | PB-8c | Interstitial while `POST /users` runs | *(auto-advance)* | loading, → S3 on failure |
 | S3 | Registration error | `/welcome/error` | PB-8c | Recover a failed registration | Try again | — |
-| S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "Your teacher is building your path" | *(none; refresh)* | empty (holding) |
-| S5 | My Path | `/path` | PB-8d | The spine: nodes in order, status, what's next | Open current node | loading, error, empty (S4) |
-| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Consume the video or article + inline media | Mark complete → *or* Go to practice | loading, error, locked |
-| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result | Submit answer → Finish | loading, error, in-progress, result |
+| S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "We're building your personalized path" | *(none; refresh)* | empty (holding) |
+| S5 | My Path | `/path` | PB-8d | The spine: steps in order grouped into sections, status, what's next | Open current step | loading, error, empty (S4) |
+| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Video-first: the media, its timed complementary resources, and the node's practice step | Mark complete → *or* Go to practice | loading, error, locked |
+| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell | Submit answer → Finish | loading, error, in-progress, result |
 | S8 | Not found | `/:pathMatch(.*)*` | PB-8b | 404 | Back to path | — |
 
 Notes:
 - **S4 is a state of S5, not a separate route.** `GET /students/me/path` returns not-found when
   there is no assignment; the path screen renders the holding variant. This is the "landed in the
   app" endpoint for PB-8c's success definition.
-- **S6 → S7 is conditional.** A content node is `video` or `article`
-  (`StudentPathItem.content_type`). A node may also have one or more challenges
-  (`GET /content-nodes/{id}/challenges`). If it has a challenge, the node's primary action leads
-  to Practice; if not, the primary action is Mark complete.
+- **The path groups its steps into sections.** A path step carries an optional teacher-set
+  section label; S5 groups consecutive steps that share one under a competency-named heading
+  (ADR-015). Sections are never named for a time period. A path with no labels renders as one
+  ungrouped list. This is path data only — the student path has **no dependency on the
+  taxonomy / knowledge graph.**
+- **The challenge is the node's practice step (ADR-015), not a peer of the lesson.** A content
+  node is `video` or `article` (`StudentPathItem.content_type`) and may also have one or more
+  challenges (`GET /content-nodes/{id}/challenges`). If it has a challenge, S6's primary action
+  is "Go to practice" and S7 is entered from within S6, returning there on finish; if not, S6's
+  primary action is "Mark complete".
 - **Node completion is event-driven.** There is no "complete node" endpoint. The SPA emits
   `lesson.completed` (and `exercise.*` events for practice); the Aggregation Worker derives node
-  status (ADR-011). The path screen reflects status on next load.
+  status, and section status derives from its steps' status (ADR-011). The path screen reflects
+  status on next load.
 
 ---
 
@@ -92,7 +121,8 @@ Notes:
 ```
 
 One spine (Path), one detail level (Node), one optional sub-level (Practice). No deeper nesting
-in the alpha.
+in the alpha. Practice is the node's own step — S7 is reached only from the node it belongs to,
+never directly from the path.
 
 ### Chrome
 
@@ -147,12 +177,51 @@ One skeleton for every authenticated screen. Formalises `AuthenticatedLayout.vue
 ```
 
 Rules:
-- **Single column, mobile-first.** No multi-column layouts in the alpha. Content column
-  `max-w-3xl`/`max-w-4xl`, horizontal padding on small screens.
+- **Single column, mobile-first — for S0–S5 and S8.** No multi-column layouts on those
+  screens. Content column `max-w-3xl`/`max-w-4xl`, horizontal padding on small screens.
+  **S6 and S7 are the exception** — see below.
 - **One primary action per screen.** Secondary actions are text links, visually quieter.
 - **The page head owns the h1.** Screens do not render their own top-level heading inside the
   content column.
 - **Loading / error / empty replace the content column**, never the header.
+
+### S6 / S7 — responsive layout (ADR-015)
+
+S6 and S7 keep the header and context bar, but their content region is **responsive**, not a
+fixed single column:
+
+- **Portrait / narrow:** a single column. In S6 the video/article pins to the top of the
+  viewport and stays visible while the rest of the content scrolls beneath it.
+- **Landscape / wide:** a **two-region** layout — a primary region and a secondary region
+  side by side. In S6 the video is primary and its resources are secondary; in S7 the
+  exercise prompt and the answer input sit side by side.
+- **No forced rotation.** The student is never told to turn their device; both orientations
+  are first-class.
+
+### S6 — lesson screen anatomy
+
+- **The media is primary and above the fold on load.** A small or below-the-fold player is
+  the top predicted cause of alpha dropout — the video must be the first thing the student
+  sees, at a usable size.
+- **Timed complementary resources** are driven by cues on the content node. A cue carries a
+  timestamp, the resource, and a **focus mode**, set per cue by the teacher:
+  - `video` — the video stays primary; the resource appears in the secondary region (or
+    below, in portrait).
+  - `resource` — the resource becomes primary; the video shrinks to a pinned secondary
+    position **but keeps playing**.
+  The video never stops when a cue fires.
+- **The practice step** (if the node has a challenge) is a single "Go to practice" affordance
+  at the natural end of the flow — not a card competing with the video mid-screen.
+- The cue schema (timestamp, resource reference, focus mode) is **not yet specified** — it is
+  a content-spec prerequisite for PB-8e (see Open questions).
+
+### S7 — practice screen anatomy
+
+- **Immersive, but in-shell.** The header stays; S7 does not break out into a chrome-less
+  full-screen mode. "Immersive" is visual density and focus — high-contrast, minimal
+  secondary UI, one thing to do at a time — not a structural change.
+- Entered from within S6; "‹ Back to lesson" and browser-back both return to S6.
+- Result is shown **inline** in S7, then "Finish" returns to S6 → S5.
 
 ---
 
@@ -170,8 +239,8 @@ and error states").
 | `StateLocked` | node is `locked` | "Complete the previous step to unlock this lesson." | **Back to path** |
 
 - The **holding state (S4)** is `StateEmpty` with fixed copy: heading "You're all set", line
-  "Your teacher is building your personalized path. We'll let you know when it's ready." No
-  action, or a quiet "Check again".
+  "We're building your personalized path. We'll let you know when it's ready." No action, or a
+  quiet "Check again". (Impersonal "we" — some paths have no formal teacher; see ADR-015.)
 - `data-test` hooks stay stable: `loading`, `no-path`, `error`, `retry`, `locked` (already used
   in `PathView.vue`).
 
@@ -180,9 +249,14 @@ and error states").
 - Second person, present tense, plain. "Open your next lesson", not "Continue your learning
   journey".
 - Encouraging, not gamified. No confetti, no streak-shaming, minimal exclamation marks.
+- **No time-box language.** Never "week", "day", "on schedule", "behind", or a due date on
+  any student-facing surface. Progress reads by competency, not by calendar.
+- **Impersonal, not teacher-bound.** The product speaks as "we"; it never assumes the student
+  has a named teacher (some paths do not).
 - Errors name what failed and offer one recovery. Never blame the user.
-- One term per concept across all screens: **path**, **lesson** (a content node the student
-  reads/watches), **practice** (a challenge's exercises), **step** (a path position).
+- One term per concept across all screens: **path**, **section** (a named group of steps on
+  the path), **step** (a path position), **lesson** (a content node the student
+  reads/watches), **practice** (a node's challenge exercises).
 
 ---
 
@@ -209,50 +283,90 @@ Action items this raises (small, not blocking wireframes):
 
 ## Wireframes
 
-The companion canvas holds one artboard per screen (S0–S8) at this fidelity — labelled boxes,
-real copy, no colour commitment. Rough reference for the two screens that anchor the loop:
+The companion canvas holds one artboard per screen (S0–S8) plus a core-loop / route-map
+overview, at this fidelity — labelled boxes, real copy, no colour commitment.
 
-**S5 — My Path**
+**Canvas:** <https://claude.ai/code/artifact/761c7260-e79b-4a1c-af34-89accfedd7f6>
+(working files in `design/PB-8j-wireframes/`)
+
+Rough reference for the three screens that anchor the loop:
+
+**S5 — My Path** (sections from step labels; no time-box framing)
 
 ```
   My path
   ────────────────────────────────────
-  Week 1 · Getting your hands moving          3 steps
+  Fretting-hand fundamentals                  3 steps
 
-  ①  ✓  Tuning and posture              completed
-  ②  ▸  Your first chord: E minor       in progress   [ Open ]
-  ③  🔒 Switching between chords         locked
+  ✓   Tuning and posture                completed
+  ▸   Your first chord: E minor         in progress   [ Open ]
+  🔒  Switching between chords           locked
+
+  Your first songs                            2 steps
+  🔒  Two-chord song: "…"               locked
 ```
 
-**S6 — Node / Lesson**
+**S6 — Node / Lesson** (video-first; timed resources with per-cue focus)
 
 ```
   ‹ Back to path
 
   Your first chord: E minor                    [ Mark complete ]
   ────────────────────────────────────
-  [ ▶  video player  ················· ]
+  ┌──────────────────────────────────┐
+  │  ▶  video — primary, above fold  │   portrait: pins to top while content scrolls
+  └──────────────────────────────────┘   landscape: video left, resources right
 
   Notes
   Place your fingers on …
-  [ inline chord diagram ]
 
-  ── if this node has a challenge ──
+  ⤷ cue @ 1:10  [ chord diagram — Em ]   focus: video  → resource shows secondary
+  ⤷ cue @ 2:40  [ full-screen tab map ]  focus: resource → video shrinks, keeps playing
+
+  ── node has a challenge ──
   Ready to try it?                             [ Go to practice ]
+```
+
+**S7 — Practice** (immersive, in-shell; result inline)
+
+```
+  ‹ Back to lesson
+
+  Practice — E minor                           2 of 4
+  ────────────────────────────────────
+  portrait:  prompt, then input, stacked
+  landscape: prompt | input, side by side
+
+  [ Submit answer ]
+  ── on finish ──
+  Result: 3 of 4 correct                       [ Finish ]
 ```
 
 ---
 
 ## Open questions
 
-| Question | Owner | Proposed resolution |
+### Resolved by the 2026-09-03 review
+
+| Question | Resolution |
+|---|---|
+| Node routes nested under `/path` vs flat `/nodes/:id`? | Nested — keeps "back to path" and browser-back consistent |
+| Is `/path` the authenticated home, or is there a separate dashboard? | `/path` is home; redirect `/` → `/path` when signed in. No separate dashboard in the alpha |
+| Practice result — inline in S7 or a distinct screen? | Inline in S7 |
+| Account / profile screen for the alpha? | No — "Sign out" in the header is enough; defer |
+| Does the holding state (S4) poll, or is it refresh-only? | Refresh-only; a "Check again" link, no polling |
+| Is the challenge a peer screen or part of the node? | Part of the node (ADR-015) — S7 entered from S6 only |
+| How is the path grouped? | Teacher-set section label per step; no knowledge-graph dependency (ADR-015) |
+| Can S6/S7 use multi-column / landscape? | Yes — S6/S7 responsive, two-region in landscape, no forced rotation (ADR-015) |
+
+### Still open
+
+| Question | Owner | Note |
 |---|---|---|
-| Node routes nested under `/path` vs flat `/nodes/:id`? | Gilson | Nested — keeps "back to path" and browser-back consistent |
 | Does a node with a challenge require *passing* it to count as complete, or is finishing the lesson enough for the alpha? | Gilson | Defer to PB-8f + the rules engine; affects the S6→S7→S5 status flow |
-| Is `/path` the authenticated home, or is there a separate dashboard? | Gilson | `/path` is home; redirect `/` → `/path` when signed in. No separate dashboard in the alpha |
-| Practice result — inline in S7 or a distinct screen? | Gilson | Inline in S7 |
-| Account / profile screen for the alpha? | Gilson | No — "Sign out" in the header is enough; defer |
-| Does the holding state (S4) poll, or is it refresh-only? | Gilson | Refresh-only for the alpha; a "Check again" link, no polling |
+| Timed-resource cue schema — timestamp, resource reference, focus mode | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built |
+| Where in the concierge flow does the teacher set section labels, and what guidance keeps them consistent? | Gilson | Authoring-side; feeds the `learning-paths` spec revision (ADR-015 follow-up) |
+| Landscape two-region breakpoint and behaviour for S6/S7 | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
 
 ---
 
@@ -261,9 +375,12 @@ real copy, no colour commitment. Rough reference for the two screens that anchor
 - **Backlog item:** PB-8j — Student alpha UX foundation (Notion `3ce9ccc1-102f-8150-ad87-dfac43a21a28`)
 - **Consumers:** `plans/PB-8c-student-onboarding-auth.md`; PB-8d–8f (plans TBD)
 - **Builds on:** `plans/PB-8b-web-app-foundation.md` (app shell, `AuthenticatedLayout`, state pattern)
+- **Not this doc:** PB-8i — content & classification concierge tooling (the content-creator flow)
 - **Contracts:** `openapi/core-domain-service.yaml` (`GET /students/me/path`, `GET /content-nodes/*`,
   `GET /challenges/*`, `GET /exercises/*`), `openapi/event-ingestion-service.yaml` (`POST /events`)
 - **Behaviour specs:** `features/learning-paths/student-path-view.feature`,
   `features/content-management/{content-nodes,challenges,exercises}.feature`
-- **ADRs:** ADR-007 (auth), ADR-011 (node-completion state derived by the Aggregation Worker)
+- **ADRs:** ADR-007 (auth), ADR-011 (node-completion state derived by the Aggregation Worker),
+  **ADR-015** (challenge belongs to the node; path is a self-contained sectioned sequence; S6/S7
+  responsive — carries the 2026-09-03 review decisions)
 - **Brand:** `motifpath-brand/BRAND.md`, `motifpath-brand/colors.json` (colour tokens — `TBD`)
