@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #e9e7e1; color: #26251f; }
+    a { color: #26251f; } a:hover { color: #000; }
+    .wrap { padding: 28px 30px 32px; }
+    .kicker { font: 600 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: #6b6a61; }
+    h1.title { font-size: 22px; margin: 6px 0 2px; font-weight: 650; }
+    .sub { font-size: 13px; color: #6b6a61; margin: 0 0 24px; max-width: 660px; line-height: 1.5; }
+    .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: start; }
+    .panel h2 { font: 600 12px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; color: #8a897e; margin: 0 0 14px; }
+    .panel h2.mt { margin-top: 26px; }
+    .loop { width: 100%; height: auto; }
+    .routes { font: 500 11.5px/1.95 ui-monospace, SFMono-Regular, Menlo, monospace; color: #3a392f; white-space: pre; overflow-x: auto; }
+    .routes .m { color: #9a998c; }
+    .foot { margin-top: 12px; font-size: 11px; color: #9a998c; line-height: 1.6; }
+    .states { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { font: 600 10.5px/1 ui-monospace, Menlo, monospace; border: 1px solid #cfcdc1; border-radius: 4px; padding: 5px 7px; color: #6b6a61; background: #f3f2ec; }
+    .legend { margin-top: 24px; }
+    .legend .row { display: flex; gap: 9px; font-size: 12px; line-height: 1.5; padding: 6px 0; border-top: 1px solid #dcdad0; }
+    .legend .row .id { font: 600 11px/1.5 ui-monospace, Menlo, monospace; color: #8a897e; flex: none; width: 22px; }
+  </style>
+</helmet>
+<div class="wrap">
+  <div class="kicker">PB-8j &nbsp;·&nbsp; Student Alpha UX Foundation &nbsp;·&nbsp; wireframe fidelity</div>
+  <h1 class="title">Core loop &amp; route map</h1>
+  <p class="sub">One spine (Path), one detail level (Node), one optional sub-level (Practice — the node's own step). No deeper nesting. Structure and copy only — no colour. Revised 2026-09-03 per <code>ADR-015</code>: challenge belongs to the node; path is a self-contained sectioned sequence (no knowledge-graph link); S6/S7 responsive.</p>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>The core loop</h2>
+      <svg class="loop" viewBox="0 0 520 264" role="img" aria-label="Core loop diagram">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#26251f"></path>
+          </marker>
+        </defs>
+        <rect x="12" y="40" width="132" height="64" rx="6" fill="#fff" stroke="#26251f" stroke-width="1.5"></rect>
+        <text x="78" y="70" text-anchor="middle" font-size="13" font-weight="650" font-family="ui-sans-serif, system-ui">PATH</text>
+        <text x="78" y="88" text-anchor="middle" font-size="10" fill="#8a897e" font-family="ui-monospace, Menlo">S5 · /path</text>
+
+        <rect x="194" y="40" width="132" height="64" rx="6" fill="#fff" stroke="#26251f" stroke-width="1.5"></rect>
+        <text x="260" y="66" text-anchor="middle" font-size="12" font-weight="650" font-family="ui-sans-serif, system-ui">NODE / LESSON</text>
+        <text x="260" y="86" text-anchor="middle" font-size="10" fill="#8a897e" font-family="ui-monospace, Menlo">S6</text>
+
+        <rect x="376" y="40" width="132" height="64" rx="6" fill="#fff" stroke="#26251f" stroke-width="1.5"></rect>
+        <text x="442" y="70" text-anchor="middle" font-size="13" font-weight="650" font-family="ui-sans-serif, system-ui">PRACTICE</text>
+        <text x="442" y="88" text-anchor="middle" font-size="10" fill="#8a897e" font-family="ui-monospace, Menlo">S7</text>
+
+        <line x1="144" y1="62" x2="192" y2="62" stroke="#26251f" stroke-width="1.5" marker-end="url(#ah)"></line>
+        <text x="168" y="54" text-anchor="middle" font-size="9.5" fill="#55544c" font-family="ui-sans-serif, system-ui">open step</text>
+        <line x1="192" y1="84" x2="146" y2="84" stroke="#9a998c" stroke-width="1.2" marker-end="url(#ah)"></line>
+        <text x="169" y="99" text-anchor="middle" font-size="9" fill="#9a998c" font-family="ui-sans-serif, system-ui">back</text>
+
+        <line x1="326" y1="62" x2="374" y2="62" stroke="#26251f" stroke-width="1.5" marker-end="url(#ah)"></line>
+        <text x="350" y="54" text-anchor="middle" font-size="9.5" fill="#55544c" font-family="ui-sans-serif, system-ui">has challenge</text>
+        <line x1="374" y1="84" x2="328" y2="84" stroke="#9a998c" stroke-width="1.2" marker-end="url(#ah)"></line>
+        <text x="351" y="99" text-anchor="middle" font-size="9" fill="#9a998c" font-family="ui-sans-serif, system-ui">back</text>
+
+        <path d="M260 104 C 260 150, 78 150, 78 106" fill="none" stroke="#26251f" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ah)"></path>
+        <text x="168" y="146" text-anchor="middle" font-size="9.5" fill="#55544c" font-family="ui-sans-serif, system-ui">no challenge → mark complete</text>
+
+        <path d="M442 104 C 442 208, 78 208, 78 106" fill="none" stroke="#26251f" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ah)"></path>
+        <text x="260" y="204" text-anchor="middle" font-size="9.5" fill="#55544c" font-family="ui-sans-serif, system-ui">finish practice</text>
+
+        <text x="12" y="238" font-size="9.5" fill="#9a998c" font-family="ui-sans-serif, system-ui">Node completion is event-driven — the SPA emits lesson.completed / exercise.* ;</text>
+        <text x="12" y="250" font-size="9.5" fill="#9a998c" font-family="ui-sans-serif, system-ui">the Aggregation Worker derives node status (ADR-011). No "complete node" endpoint.</text>
+      </svg>
+
+      <div class="legend">
+        <div class="row"><span class="id">S0</span><span>Landing — one line of context + a way in</span></div>
+        <div class="row"><span class="id">S1</span><span>Sign in — Google auth via Clerk &lt;SignIn /&gt;</span></div>
+        <div class="row"><span class="id">S2</span><span>Registering — interstitial while POST /users runs</span></div>
+        <div class="row"><span class="id">S3</span><span>Registration error — recover a failed registration</span></div>
+        <div class="row"><span class="id">S4</span><span>My Path (holding) — path isn't ready yet</span></div>
+        <div class="row"><span class="id">S5</span><span>My Path — steps in order, grouped into competency sections</span></div>
+        <div class="row"><span class="id">S6</span><span>Node / Lesson — video-first + timed resources + the practice step</span></div>
+        <div class="row"><span class="id">S7</span><span>Practice — the node's challenge; immersive, in-shell; result inline</span></div>
+        <div class="row"><span class="id">S8</span><span>Not found — 404</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Route map</h2>
+<div class="routes">/                            <span class="m">signed out → Landing (S0)</span>
+                             <span class="m">signed in  → redirect /path</span>
+/sign-in                     Sign in (S1)         <span class="m">[public]</span>
+/welcome                     Registering (S2)     <span class="m">[auth]</span>
+/welcome/error               Registration err (S3) <span class="m">[auth]</span>
+/path                        My Path (S5) / S4    <span class="m">[requiresAuth]</span>
+/path/nodes/:nodeId          Node / Lesson (S6)   <span class="m">[requiresAuth]</span>
+/path/nodes/:nodeId/practice Practice (S7)        <span class="m">[requiresAuth]</span>
+/:pathMatch(.*)*             Not found (S8)</div>
+      <div class="foot">
+        Named routes only — <code>home, sign-in, registering, registration-error, path, node, practice, not-found</code>. Components never hardcode paths. <code>requiresAuth</code> waits for both the Clerk session and registration to resolve; an unregistered signed-in user is routed to <code>/welcome</code>.
+      </div>
+
+      <h2 class="mt">Shared state components</h2>
+      <div class="states">
+        <span class="chip">StateLoading</span>
+        <span class="chip">StateEmpty</span>
+        <span class="chip">StateError</span>
+        <span class="chip">StateLocked</span>
+      </div>
+      <div class="foot">In <code>src/shared/components/</code>. Every screen that fetches data uses them. <code>data-test</code> hooks stay stable: <code>loading · no-path · error · retry · locked</code>. The holding state (S4) is <code>StateEmpty</code> with fixed copy.</div>
+
+      <h2 class="mt">Chrome</h2>
+      <div class="foot">
+        Header on all authenticated screens: logo + wordmark · one nav link "My path" · "Sign out" pushed right. Context bar on S6 / S7 only ("‹ Back to path" / "‹ Back to lesson") — browser back does the same thing. No footer, breadcrumbs, or sidebar in the alpha.
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
