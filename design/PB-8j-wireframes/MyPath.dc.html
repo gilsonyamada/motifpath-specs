@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #e9e7e1; color: #26251f; }
+    .wrap { padding: 22px; }
+    .tag { font: 600 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; color: #6b6a61; margin-bottom: 12px; }
+    .tag b { color: #26251f; }
+    .phone { max-width: 336px; margin: 0 auto; background: #fff; border: 1px solid #c5c3b8; border-radius: 12px; overflow: hidden; }
+    .hdr { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px dashed #c5c3b8; font-size: 12px; }
+    .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; }
+    .nav { color: #6b6a61; }
+    .out { margin-left: auto; color: #6b6a61; }
+    .body { padding: 16px 14px; }
+    .phead h1 { font-size: 16px; margin: 0 0 16px; font-weight: 650; }
+    .grp { display: flex; justify-content: space-between; align-items: baseline; font: 600 11.5px/1.4 ui-sans-serif, system-ui; color: #6b6a61; margin: 0 0 2px; }
+    .grp .cnt { font-weight: 500; }
+    .item { display: flex; align-items: center; gap: 11px; padding: 13px 0; border-top: 1px solid #e5e3d9; }
+    .item:first-of-type { border-top: 1px solid #cbc9bd; }
+    .ico { flex: none; }
+    .txt { flex: 1; font-size: 12.5px; line-height: 1.35; }
+    .txt .st { display: block; font: 600 10px/1.4 ui-monospace, Menlo, monospace; color: #8a897e; margin-top: 2px; }
+    .txt.locked { color: #a9a89c; }
+    .btn { display: inline-block; border: 1.5px solid #26251f; border-radius: 6px; padding: 6px 12px; font-size: 11.5px; font-weight: 600; background: #eceae3; }
+    .states { padding: 9px 14px; border-top: 1px dashed #c5c3b8; font: 500 10px/1.6 ui-monospace, Menlo, monospace; color: #8a897e; background: #faf9f5; }
+  </style>
+</helmet>
+<div class="wrap">
+  <div class="tag"><b>S5</b> &nbsp;My Path &nbsp;·&nbsp; <b>/path</b> &nbsp;·&nbsp; PB-8d</div>
+  <div class="phone">
+    <div class="hdr">
+      <span class="brand"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#26251f" stroke-width="1.5"><path d="M1 10 L5 4 L8 8 L13 2"></path></svg>MotifPath</span>
+      <span class="nav">My path</span>
+      <span class="out">Sign out</span>
+    </div>
+    <div class="body">
+      <div class="phead"><h1>My path</h1></div>
+      <div class="grp"><span>Fretting-hand fundamentals</span><span class="cnt">3 steps</span></div>
+
+      <div class="item">
+        <svg class="ico" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#26251f" stroke-width="1.6"><circle cx="9" cy="9" r="7"></circle><path d="M6 9.2 L8 11 L12 6.5"></path></svg>
+        <span class="txt">Tuning and posture<span class="st">completed</span></span>
+      </div>
+
+      <div class="item">
+        <svg class="ico" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#26251f" stroke-width="1.6"><circle cx="9" cy="9" r="7"></circle><path d="M7.5 6 L12 9 L7.5 12 Z" fill="#26251f"></path></svg>
+        <span class="txt">Your first chord: E minor<span class="st">in progress</span></span>
+        <span class="btn">Open</span>
+      </div>
+
+      <div class="item">
+        <svg class="ico" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#a9a89c" stroke-width="1.6"><rect x="4" y="8" width="10" height="7" rx="1.5"></rect><path d="M6.5 8 V6 a2.5 2.5 0 0 1 5 0 V8"></path></svg>
+        <span class="txt locked">Switching between chords<span class="st">locked</span></span>
+      </div>
+
+      <div class="grp" style="margin-top:22px;"><span>Your first songs</span><span class="cnt">2 steps</span></div>
+
+      <div class="item" style="border-top:1px solid #cbc9bd;">
+        <svg class="ico" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#a9a89c" stroke-width="1.6"><rect x="4" y="8" width="10" height="7" rx="1.5"></rect><path d="M6.5 8 V6 a2.5 2.5 0 0 1 5 0 V8"></path></svg>
+        <span class="txt locked">Two-chord song<span class="st">locked</span></span>
+      </div>
+
+      <div class="item">
+        <svg class="ico" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#a9a89c" stroke-width="1.6"><rect x="4" y="8" width="10" height="7" rx="1.5"></rect><path d="M6.5 8 V6 a2.5 2.5 0 0 1 5 0 V8"></path></svg>
+        <span class="txt locked">Strumming in time<span class="st">locked</span></span>
+      </div>
+    </div>
+    <div class="states">loading · error (StateError → retry) · empty → S4 · sections come from teacher-set step labels (no knowledge-graph link) · status derived by the Aggregation Worker, shown on next load</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

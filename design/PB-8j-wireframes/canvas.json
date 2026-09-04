@@ -1,0 +1,24 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1240, "h": 820 },
+    { "file": "Landing.dc.html", "x": 0, "y": 960, "w": 440, "h": 520 },
+    { "file": "SignIn.dc.html", "x": 560, "y": 960, "w": 440, "h": 560 },
+    { "file": "Registering.dc.html", "x": 1120, "y": 960, "w": 440, "h": 470 },
+    { "file": "RegistrationError.dc.html", "x": 1680, "y": 960, "w": 440, "h": 470 },
+    { "file": "PathHolding.dc.html", "x": 0, "y": 1660, "w": 440, "h": 540 },
+    { "file": "MyPath.dc.html", "x": 560, "y": 1660, "w": 440, "h": 840 },
+    { "file": "NodeLesson.dc.html", "x": 1120, "y": 1660, "w": 440, "h": 920 },
+    { "file": "Practice.dc.html", "x": 1680, "y": 1660, "w": 440, "h": 720 },
+    { "file": "NotFound.dc.html", "x": 0, "y": 2720, "w": 440, "h": 420 }
+  ],
+  "annotations": [
+    { "id": "intro", "x": 0, "y": -200, "w": 660, "text": "PB-8j wireframe canvas — one artboard per screen (S0–S8) plus a core-loop / route-map overview, at wireframe fidelity: labelled boxes, real copy, no colour. Companion to motifpath-specs/design/PB-8j-student-alpha-ux-foundation.md. Revised 2026-09-03 per ADR-015. Start with 'Core loop & route map' (top-left)." },
+    { "id": "note-anatomy", "x": 2260, "y": 960, "w": 340, "text": "One page skeleton for every authenticated screen (formalises AuthenticatedLayout.vue): sticky header → optional context bar (S6/S7) → page head owns the h1 + at most one primary action → content region. Single centred column for S0–S5, S8. S6/S7 are responsive (see ADR-015). Loading / error / empty replace the content region, never the header." },
+    { "id": "note-s4", "x": 2260, "y": 1400, "w": 340, "text": "S4 is a STATE of S5, not a route. GET /students/me/path returns not-found → the path screen renders the holding variant. This is the 'landed in the app' endpoint for PB-8c's success definition. Refresh-only, no polling. Impersonal copy — no assumed teacher." },
+    { "id": "note-sections", "x": 2260, "y": 1720, "w": 340, "text": "ADR-015: S5 groups steps into competency-named sections from an OPTIONAL teacher-set label on each path step. Consecutive steps sharing a label group under it; no label → flat list. Path data only — the student path has NO dependency on the taxonomy / knowledge graph. No 'Week N' framing anywhere." },
+    { "id": "note-s6", "x": 2260, "y": 2060, "w": 340, "text": "ADR-015 — S6 is a DYNAMIC VIDEO LAYOUT (converged after several revisions). Video fills the frame by default. When a timed cue is active the video shrinks and the cue's content takes the freed space — beside the video in landscape (the reference case), below it in portrait — then the video reclaims the full frame when the cue passes. Content is continuous with the video frame: not an overlay, not a chrome'd panel, no label. Playback never pauses. The challenge is the node's practice step — 'Go to practice' / 'Mark complete' appears when the video ends; S7 entered from S6 only." },
+    { "id": "note-events", "x": 2260, "y": 2400, "w": 340, "text": "Node completion is event-driven. No 'complete node' endpoint — the SPA emits lesson.completed and exercise.* ; the Aggregation Worker derives node status, section status derives from step status (ADR-011). The path reflects status on next load." },
+    { "id": "note-tokens", "x": 2260, "y": 2680, "w": 340, "text": "No colour commitment here. Semantic token roles (page surface, body ink, primary action, locked, success, danger) are defined in the spec doc; motif-blue / motif-ink / motif-cream hex is a parallel motifpath-brand task, plus motif-success / motif-danger to add to tailwind.config.ts." }
+  ],
+  "launch": { "view": "canvas" }
+}

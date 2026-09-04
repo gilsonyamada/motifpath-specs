@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #e9e7e1; color: #26251f; }
+    .wrap { padding: 22px; }
+    .tag { font: 600 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .05em; text-transform: uppercase; color: #6b6a61; margin-bottom: 12px; }
+    .tag b { color: #26251f; }
+    .phone { max-width: 336px; margin: 0 auto; background: #fff; border: 1px solid #c5c3b8; border-radius: 12px; overflow: hidden; }
+    .hdr { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px dashed #c5c3b8; font-size: 12px; }
+    .brand { display: flex; align-items: center; gap: 7px; font-weight: 700; }
+    .nav { color: #6b6a61; }
+    .out { margin-left: auto; color: #6b6a61; }
+    .ctx { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px dashed #d8d6cc; font-size: 12px; color: #55544c; }
+    .title { padding: 12px 14px 0; font-size: 14px; font-weight: 650; line-height: 1.3; }
+
+    .state { padding: 12px 14px 0; }
+    .state .cue { font: 600 9px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .04em; text-transform: uppercase; color: #8a897e; margin-bottom: 5px; }
+
+    /* one continuous frame; video + timed content share it, content never on top of video */
+    .frame { border: 1px solid #26251f; border-radius: 6px; overflow: hidden; }
+    .vid { position: relative; background: #1f1e1b; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; }
+    .vid.short { aspect-ratio: 16 / 7; }
+    .vid svg { width: 40px; height: 40px; }
+    .scrub { position: absolute; left: 10px; right: 10px; bottom: 9px; height: 4px; border-radius: 3px; background: rgba(255,255,255,.3); }
+    .scrub .fill { position: absolute; left: 0; top: 0; bottom: 0; background: #fff; border-radius: 3px; }
+    .scrub .cue2 { position: absolute; top: -3px; width: 3px; height: 10px; background: #f3f2ec; border: 1px solid #26251f; }
+    /* the timed content pane — same frame, directly continuous with the video, no label */
+    .pane { background: #f6f5ef; border-top: 1px solid #26251f; padding: 12px; font-size: 12px; line-height: 1.5; }
+    .pane .res { margin-top: 8px; border: 1px dashed #b4b2a6; border-radius: 5px; background: #eceae3; color: #8a897e; font-size: 11px; text-align: center; padding: 14px; }
+
+    .cap { padding: 6px 14px 0; font-size: 10.5px; line-height: 1.5; color: #8a897e; }
+    .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px 4px; }
+    .foot .lbl { font-size: 12px; color: #55544c; }
+    .btn { display: inline-block; border: 1.5px solid #26251f; border-radius: 6px; padding: 7px 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap; background: #eceae3; }
+    .states { margin-top: 10px; padding: 9px 14px; border-top: 1px dashed #c5c3b8; font: 500 10px/1.6 ui-monospace, Menlo, monospace; color: #8a897e; background: #faf9f5; }
+  </style>
+</helmet>
+<div class="wrap">
+  <div class="tag"><b>S6</b> &nbsp;Node / Lesson &nbsp;·&nbsp; <b>/path/nodes/:nodeId</b> &nbsp;·&nbsp; PB-8e</div>
+  <div class="phone">
+    <div class="hdr">
+      <span class="brand"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#26251f" stroke-width="1.5"><path d="M1 10 L5 4 L8 8 L13 2"></path></svg>MotifPath</span>
+      <span class="nav">My path</span>
+      <span class="out">Sign out</span>
+    </div>
+    <div class="ctx"><span>‹ Back to path</span><span>Step 2 of 5</span></div>
+    <div class="title">Your first chord: E minor</div>
+
+    <div class="state">
+      <div class="cue">0:00 — no timed content · video fills the frame</div>
+      <div class="frame">
+        <div class="vid">
+          <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="2"><circle cx="22" cy="22" r="20"></circle><path d="M18 15 L30 22 L18 29 Z" fill="#fff"></path></svg>
+          <div class="scrub"><div class="fill" style="width:8%"></div><div class="cue2" style="left:34%"></div><div class="cue2" style="left:62%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="state">
+      <div class="cue">1:12 — timed content in · video shrinks to make room</div>
+      <div class="frame">
+        <div class="vid short">
+          <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="2"><circle cx="22" cy="22" r="20"></circle><path d="M18 15 L30 22 L18 29 Z" fill="#fff"></path></svg>
+          <div class="scrub"><div class="fill" style="width:34%"></div><div class="cue2" style="left:34%"></div><div class="cue2" style="left:62%"></div></div>
+        </div>
+        <div class="pane">
+          Keep your thumb behind the neck so your fingers can arch over the strings.
+          <div class="res">chord diagram — Em</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cap">The timed content reads as part of the video frame, directly below it — never over it, no "Following along" label. When its cue passes, the video reclaims the full frame. Landscape is the reference case: content sits beside the video instead of below. Playback never pauses.</div>
+
+    <div class="foot">
+      <span class="lbl">When the video ends…</span>
+      <span class="btn">Go to practice</span>
+    </div>
+    <div class="cap">(node with no challenge → this button is <b>Mark complete</b>)</div>
+
+    <div class="states">loading · error · locked · dynamic split: video full-frame → video + timed content when a cue is active → full-frame again · never overlaid, never paused · cue schema TBD (blocks PB-8e)</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
