@@ -83,7 +83,7 @@ next, let them do it, and show progress.**
 | S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "We're building your personalized path" | *(none; refresh)* | empty (holding) |
 | S5 | My Path | `/path` | PB-8d | The spine: steps in order grouped into sections, status, what's next | Open current step | loading, error, empty (S4) |
 | S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Dynamic video layout — video fills the frame, shrinks to share it with timed content while a cue is active; practice step appears when the video ends | Mark complete → *or* Go to practice | loading, error, locked |
-| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell. Fixed regions: navigator · statement · interaction · help | Submit / interact → Finish | loading, error, in-progress, result |
+| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Spare: slim bar (back · progress · help) then the exercise fills the screen | Answer → Next › → Finish | loading, error, in-progress, result |
 | S8 | Not found | `/:pathMatch(.*)*` | PB-8b | 404 | Back to path | — |
 
 Notes:
@@ -215,25 +215,28 @@ things appear next to it exactly when they're relevant."
 
 ### S7 — practice screen anatomy
 
-S7 keeps the header and context bar; its content region is **responsive** (portrait: a
-single column; landscape: exercise prompt and answer input side by side). No forced
-rotation.
+**S7 is deliberately spare** — the exercise is the screen. One slim bar, then the exercise.
 
-- **Immersive, but in-shell.** The header stays; S7 does not break out into a chrome-less
-  full-screen mode. "Immersive" is visual density and focus — high-contrast, minimal
-  secondary UI, one thing to do at a time — not a structural change.
-- Entered from within S6; "‹ Back to lesson" and browser-back both return to S6.
-- Result is shown **inline** in S7, then "Finish" returns to S6 → S5.
+- **The bar** (directly under the header): "‹ Back to lesson" · a thin progress bar (fill
+  only — **no "2 of 4" text**) · a small "?" help control that opens instructions for the
+  current exercise in a panel.
+- **The prompt** is one line of plain text — not a labelled "question statement" region,
+  just the sentence.
+- **The exercise** fills the rest. The student answers by interacting with it directly
+  (tap a fret, pick a choice); there is no separate labelled "answer" region.
+- **Moving through:** the answer registers in place, then the student taps **"Next ›"** to
+  advance. **"‹ Back"** revisits an answered exercise (answers are revisable in the alpha).
+  On the last exercise "Next ›" becomes "See result".
+- **Responsive:** portrait stacks prompt then exercise; landscape puts them side by side.
+  No forced rotation.
+- **Immersive, but in-shell.** The header stays; "immersive" is visual restraint —
+  high-contrast, one thing to do — not a chrome-less full-screen mode.
+- Entered from within S6; "‹ Back to lesson" and browser-back both return to S6. Result is
+  shown **inline**, then "Finish" returns to S6 → S5.
 
-**S7 has structural regions PB-8j fixes now and detail PB-8f owns.** PB-8j locks that S7
-contains, in this order: a **progress / navigator bar** (e.g. "2 of 4"), a **question
-statement** region, an **answer / interaction** region, and a **help affordance** (a control
-that opens instructions for the current exercise in a modal or panel). PB-8f decides
-everything below that: exercise-type rendering, whether the navigator lets a student move
-back to an answered exercise, ordered vs. randomised exercise sequences, and whether an
-exercise type takes an explicit "Submit" or treats a single interaction as the answer. S7's
-region layout must stay modular so those variations drop in without a rebuild — this screen
-is expected to evolve heavily.
+PB-8f owns the detail below this structure: exercise-type rendering, whether a type takes an
+explicit "Submit" or treats one interaction as the answer, and ordered vs. randomised
+sequences. The layout must stay modular so those drop in without a rebuild.
 
 ---
 
@@ -340,28 +343,24 @@ Rough reference for the three screens that anchor the loop:
                                     (no challenge → [ Mark complete ])
 ```
 
-**S7 — Practice** (immersive, in-shell; result inline). PB-8j fixes the regions; PB-8f fills them.
+**S7 — Practice** (spare — the exercise is the screen; result inline)
 
 ```
-  ‹ Back to lesson
+  ‹ Back to lesson      ▁▁▁▂▂▂░░░░░░░           (?)     ← one slim bar, no "2 of 4"
 
-  Practice — E minor          ● ● ○ ○   2 of 4        [ ? Help ]
-  ────────────────────────────────────
-  Question statement
-  "Which fret is the low E?"                          ← statement region
+  Tap the second fret of the A string.                 ← prompt: one plain line
 
-  [ answer / interaction region ]                     ← per-type: click-as-answer
-  portrait: statement then interaction, stacked          or explicit submit (PB-8f)
-  landscape: statement | interaction, side by side
+  ┌──────────────────────────────────────────────┐
+  │           the exercise fills this space        │   tap to answer directly
+  │           (fretboard, choices, …)              │   per-type rendering = PB-8f
+  └──────────────────────────────────────────────┘
 
-  [ Submit ]  (only for exercise types that need it)
+  ‹ Back                                    [ Next › ]  ← last one: "See result"
   ── on finish ──
-  Result: 3 of 4 correct                       [ Finish ]
-```
+  3 of 4 correct                              [ Finish ]
 
-Regions PB-8j locks: navigator/progress bar · question statement · answer / interaction ·
-help affordance. PB-8f owns: exercise-type rendering, move-back-between-exercises, ordered
-vs. randomised sequence, submit vs. click-as-answer.
+  landscape: prompt | exercise side by side
+```
 
 ---
 
@@ -380,6 +379,7 @@ vs. randomised sequence, submit vs. click-as-answer.
 | How is the path grouped? | Teacher-set section label per step; no knowledge-graph dependency (ADR-015) |
 | Can S6/S7 use multi-column / landscape? | S6 splits video / timed-content while a cue is active (side by side in landscape, stacked in portrait); S7 is responsive, two-region in landscape; no forced rotation (ADR-015) |
 | Is S6 a video-plus-panels page, an overlay, or something else? | A dynamic layout — video fills the frame, shrinks to share it with timed content only while a cue is active; content is continuous with the frame, never over the video (ADR-015) |
+| S7 structure and navigation? | Slim bar (back · thin progress, no count · help "?") then the exercise fills the screen. Answer registers in place → "Next ›"; "‹ Back" revisits answered exercises (answers revisable in the alpha) |
 
 ### Still open
 
@@ -389,7 +389,6 @@ vs. randomised sequence, submit vs. click-as-answer.
 | Timed-resource cue schema — timestamp, resource reference, render style | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built. Authored as part of the video (see PB-8i) |
 | Where in the concierge flow does the teacher set section labels, and what guidance keeps them consistent? | Gilson | Authoring-side; feeds the `learning-paths` spec revision (ADR-015 follow-up) |
 | Landscape breakpoint and behaviour for S7 (two-region) and the S6 player | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
-| S7: does the navigator let a student move back to an answered exercise? | Gilson | PB-8f + assessment model — affects whether answers are revisable |
 | S7: ordered vs. randomised exercise sequence (some exercises have no natural order) | Gilson | PB-8f + `content-management` / challenge model |
 | S7: which exercise types take an explicit "Submit" vs. treat one interaction as the answer? | Gilson | PB-8f + exercise-type model; affects `exercise.answer_sent` semantics |
 | S7: help content — where authored, per exercise or per challenge? | Gilson | PB-8f + content model |

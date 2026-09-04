@@ -8,7 +8,7 @@
     { "file": "PathHolding.dc.html", "x": 0, "y": 1660, "w": 440, "h": 540 },
     { "file": "MyPath.dc.html", "x": 560, "y": 1660, "w": 440, "h": 840 },
     { "file": "NodeLesson.dc.html", "x": 1120, "y": 1660, "w": 440, "h": 920 },
-    { "file": "Practice.dc.html", "x": 1680, "y": 1660, "w": 440, "h": 800 },
+    { "file": "Practice.dc.html", "x": 1680, "y": 1660, "w": 440, "h": 720 },
     { "file": "NotFound.dc.html", "x": 0, "y": 2720, "w": 440, "h": 420 }
   ],
   "annotations": [
