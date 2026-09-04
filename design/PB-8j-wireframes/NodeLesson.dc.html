@@ -20,20 +20,22 @@
     .ctx { display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-bottom: 1px dashed #d8d6cc; font-size: 12px; color: #55544c; }
     .title { padding: 12px 14px 0; font-size: 14px; font-weight: 650; line-height: 1.3; }
 
-    /* two components: the player, and a companion region that tracks playback */
-    .player { position: relative; margin: 10px 14px 0; aspect-ratio: 16 / 9; border: 1px solid #26251f; border-radius: 6px; background: #1f1e1b; overflow: hidden; }
-    .player .play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-    .scrub { position: absolute; left: 10px; right: 10px; bottom: 10px; height: 4px; border-radius: 3px; background: rgba(255,255,255,.3); }
-    .scrub .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 34%; background: #fff; border-radius: 3px; }
-    .scrub .cue { position: absolute; top: -3px; width: 3px; height: 10px; background: #f3f2ec; border: 1px solid #26251f; }
+    .state { padding: 12px 14px 0; }
+    .state .cue { font: 600 9px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .04em; text-transform: uppercase; color: #8a897e; margin-bottom: 5px; }
 
-    .companion { margin: 12px 14px 0; border: 1px solid #c5c3b8; border-radius: 6px; background: #faf9f5; }
-    .companion .bar { font: 600 9px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .04em; text-transform: uppercase; color: #8a897e; padding: 7px 10px; border-bottom: 1px solid #e5e3d9; }
-    .companion .now { padding: 12px 10px; font-size: 12px; line-height: 1.5; }
-    .companion .res { margin-top: 8px; border: 1px dashed #b4b2a6; border-radius: 5px; background: #f3f2ec; color: #8a897e; font-size: 11px; text-align: center; padding: 14px; }
-    .companion .past { padding: 8px 10px; border-top: 1px dashed #e5e3d9; font-size: 11px; color: #8a897e; }
+    /* one continuous frame; video + timed content share it, content never on top of video */
+    .frame { border: 1px solid #26251f; border-radius: 6px; overflow: hidden; }
+    .vid { position: relative; background: #1f1e1b; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; }
+    .vid.short { aspect-ratio: 16 / 7; }
+    .vid svg { width: 40px; height: 40px; }
+    .scrub { position: absolute; left: 10px; right: 10px; bottom: 9px; height: 4px; border-radius: 3px; background: rgba(255,255,255,.3); }
+    .scrub .fill { position: absolute; left: 0; top: 0; bottom: 0; background: #fff; border-radius: 3px; }
+    .scrub .cue2 { position: absolute; top: -3px; width: 3px; height: 10px; background: #f3f2ec; border: 1px solid #26251f; }
+    /* the timed content pane — same frame, directly continuous with the video, no label */
+    .pane { background: #f6f5ef; border-top: 1px solid #26251f; padding: 12px; font-size: 12px; line-height: 1.5; }
+    .pane .res { margin-top: 8px; border: 1px dashed #b4b2a6; border-radius: 5px; background: #eceae3; color: #8a897e; font-size: 11px; text-align: center; padding: 14px; }
 
-    .cap { padding: 8px 14px 2px; font-size: 10.5px; line-height: 1.5; color: #8a897e; }
+    .cap { padding: 6px 14px 0; font-size: 10.5px; line-height: 1.5; color: #8a897e; }
     .foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px 4px; }
     .foot .lbl { font-size: 12px; color: #55544c; }
     .btn { display: inline-block; border: 1.5px solid #26251f; border-radius: 6px; padding: 7px 12px; font-size: 11.5px; font-weight: 600; white-space: nowrap; background: #eceae3; }
@@ -49,29 +51,33 @@
       <span class="out">Sign out</span>
     </div>
     <div class="ctx"><span>‹ Back to path</span><span>Step 2 of 5</span></div>
-
     <div class="title">Your first chord: E minor</div>
 
-    <div class="player">
-      <div class="play"><svg width="44" height="44" viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="2"><circle cx="22" cy="22" r="20"></circle><path d="M18 15 L30 22 L18 29 Z" fill="#fff"></path></svg></div>
-      <div class="scrub">
-        <div class="fill"></div>
-        <div class="cue" style="left:34%"></div>
-        <div class="cue" style="left:62%"></div>
-        <div class="cue" style="left:80%"></div>
+    <div class="state">
+      <div class="cue">0:00 — no timed content · video fills the frame</div>
+      <div class="frame">
+        <div class="vid">
+          <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="2"><circle cx="22" cy="22" r="20"></circle><path d="M18 15 L30 22 L18 29 Z" fill="#fff"></path></svg>
+          <div class="scrub"><div class="fill" style="width:8%"></div><div class="cue2" style="left:34%"></div><div class="cue2" style="left:62%"></div></div>
+        </div>
       </div>
     </div>
 
-    <div class="companion">
-      <div class="bar">Following along · 1:12</div>
-      <div class="now">
-        Keep your thumb behind the neck so your fingers can arch over the strings.
-        <div class="res">chord diagram — Em</div>
+    <div class="state">
+      <div class="cue">1:12 — timed content in · video shrinks to make room</div>
+      <div class="frame">
+        <div class="vid short">
+          <svg viewBox="0 0 44 44" fill="none" stroke="#fff" stroke-width="2"><circle cx="22" cy="22" r="20"></circle><path d="M18 15 L30 22 L18 29 Z" fill="#fff"></path></svg>
+          <div class="scrub"><div class="fill" style="width:34%"></div><div class="cue2" style="left:34%"></div><div class="cue2" style="left:62%"></div></div>
+        </div>
+        <div class="pane">
+          Keep your thumb behind the neck so your fingers can arch over the strings.
+          <div class="res">chord diagram — Em</div>
+        </div>
       </div>
-      <div class="past">↑ earlier: "Tune to standard EADGBE" (0:20) · "Name the strings" (0:48)</div>
     </div>
 
-    <div class="cap">Two components, not one: the <b>player</b>, and a <b>companion region</b> that swaps in the teacher's note / resource as each cue is reached. Never overlaid on the video. Portrait: companion below the player. Landscape: companion beside it.</div>
+    <div class="cap">The timed content reads as part of the video frame, directly below it — never over it, no "Following along" label. When its cue passes, the video reclaims the full frame. Landscape is the reference case: content sits beside the video instead of below. Playback never pauses.</div>
 
     <div class="foot">
       <span class="lbl">When the video ends…</span>
@@ -79,7 +85,7 @@
     </div>
     <div class="cap">(node with no challenge → this button is <b>Mark complete</b>)</div>
 
-    <div class="states">loading · error · locked · player + playback-synced companion region (no overlay) · cues never pause playback · cue schema TBD (blocks PB-8e) · emits lesson.started / resumed / completed</div>
+    <div class="states">loading · error · locked · dynamic split: video full-frame → video + timed content when a cue is active → full-frame again · never overlaid, never paused · cue schema TBD (blocks PB-8e)</div>
   </div>
 </div>
 </x-dc>

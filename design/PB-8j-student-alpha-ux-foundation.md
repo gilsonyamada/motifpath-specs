@@ -21,11 +21,12 @@ below; **ADR-015** carries the decisions and their rationale.
    one. The student path stays self-contained — **no dependency on the knowledge graph.**
 3. **All time-box framing is removed.** No "Week N", no schedule, no due dates on any
    student-facing surface.
-4. **S6 is a video player plus a playback-synced companion region — two components,
-   nothing overlaid on the video.** Timed resources and notes are authored against the
-   video timeline; the companion region swaps them in as each cue is reached, below the
-   player in portrait and beside it in landscape. No overlay (it would hide the frame), no
-   focus modes, no picture-in-picture — those were over-built, corrected across two rounds.
+4. **S6 is a dynamic video layout.** The video fills the frame by default; when a timed cue
+   is active the video shrinks and the cue's content takes the freed space — beside the
+   video in landscape (the reference case), below it in portrait — then the video reclaims
+   the full frame when the cue passes. The content is continuous with the video frame, not
+   an overlay and not a chrome'd panel (no "Following along" label). No per-cue focus mode,
+   no picture-in-picture. Playback never pauses. (Converged after several revisions.)
 5. **S7 is responsive; the "single column, no multi-column" rule no longer applies to it.**
    Portrait is a single column; landscape puts the prompt and input side by side. No forced
    rotation. S7 is visually immersive but stays inside the app shell.
@@ -81,7 +82,7 @@ next, let them do it, and show progress.**
 | S3 | Registration error | `/welcome/error` | PB-8c | Recover a failed registration | Try again | — |
 | S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "We're building your personalized path" | *(none; refresh)* | empty (holding) |
 | S5 | My Path | `/path` | PB-8d | The spine: steps in order grouped into sections, status, what's next | Open current step | loading, error, empty (S4) |
-| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | A video player + a companion region that tracks playback and swaps in each timed note / resource; practice step appears when the video ends | Mark complete → *or* Go to practice | loading, error, locked |
+| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Dynamic video layout — video fills the frame, shrinks to share it with timed content while a cue is active; practice step appears when the video ends | Mark complete → *or* Go to practice | loading, error, locked |
 | S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell | Submit answer → Finish | loading, error, in-progress, result |
 | S8 | Not found | `/:pathMatch(.*)*` | PB-8b | 404 | Back to path | — |
 
@@ -181,7 +182,7 @@ One skeleton for every authenticated screen. Formalises `AuthenticatedLayout.vue
 Rules:
 - **Single column, mobile-first — for S0–S5 and S8.** No multi-column layouts on those
   screens. Content column `max-w-3xl`/`max-w-4xl`, horizontal padding on small screens.
-  **S6 is a player + playback-synced companion region, and S7 is responsive** — see below.
+  **S6 is a dynamic video layout and S7 is responsive** — see below.
 - **One primary action per screen.** Secondary actions are text links, visually quieter.
 - **The page head owns the h1.** Screens do not render their own top-level heading inside the
   content column.
@@ -189,26 +190,28 @@ Rules:
 
 ### S6 — lesson screen anatomy (ADR-015)
 
-**S6 is a video player plus a playback-synced companion region — two components, nothing
-overlaid on the video.** Keep it simple: the student's model is "I am watching a lesson and
-the notes keep up with me."
+**S6 is a dynamic video layout.** By default the video fills the frame. When a timed cue is
+active the video shrinks and the cue's content takes the freed space; when the cue passes
+the video reclaims the full frame. The student's model is "I am watching a lesson, and
+things appear next to it exactly when they're relevant."
 
-- **The player** is a normal video player at a usable size; a small or below-the-fold
-  player is the top predicted cause of alpha dropout.
-- **The companion region** shows the current note / resource. As playback reaches each cue
-  it swaps in that cue's content. It is **never overlaid on the video** — an overlay hides
-  the part of the frame the note is about, and the player gives us no control over what sits
-  on screen underneath. It **never pauses playback**.
-- **Layout:** portrait stacks the companion region below the player; landscape places it
-  beside the player. No forced rotation.
-- **A cue carries a timestamp and its resource.** No focus mode, no picture-in-picture, no
-  video-shrinks-to-a-corner — those were over-built versions, corrected.
+- **Default state:** the video fills the frame at a usable size. A small or below-the-fold
+  player is the top predicted cause of alpha dropout, so when nothing is cued, nothing
+  competes with it.
+- **Cued state:** the video shrinks; the cue's note / resource occupies the space it gave
+  up — **beside the video in landscape (the reference case), below it in portrait.** The
+  content is **visually continuous with the video frame** — it reads as part of the lesson,
+  not an overlay (never on top of the video) and not a panel with its own chrome (no header
+  label like "Following along").
+- **Playback never pauses**, in either state.
+- **A cue carries a timestamp and its resource.** No per-cue focus mode, no
+  picture-in-picture — those were over-built earlier drafts, corrected.
 - **The practice step** (if the node has a challenge) is a single affordance that appears
   when the video ends — "Go to practice", or "Mark complete" for a node with no challenge.
   It does not compete with the video while it is playing.
-- The cue schema (timestamp, resource reference, companion render style) is **not yet
-  specified** — a content-spec prerequisite for PB-8e, authored against the video timeline
-  (see PB-8i and Open questions).
+- The cue schema (timestamp, resource reference, render style) is **not yet specified** — a
+  content-spec prerequisite for PB-8e, authored against the video timeline (see PB-8i and
+  Open questions).
 
 ### S7 — practice screen anatomy
 
@@ -305,24 +308,26 @@ Rough reference for the three screens that anchor the loop:
   🔒  Two-chord song: "…"               locked
 ```
 
-**S6 — Node / Lesson** (player + companion region that tracks playback; no overlay)
+**S6 — Node / Lesson** (dynamic video layout — landscape is the reference case)
 
 ```
-  ‹ Back to path                                    Step 2 of 5
-  Your first chord: E minor
+  0:00  no cue active — video fills the frame
   ┌──────────────────────────────────────────────┐
-  │                    ▶  video player            │
-  │   ▓▓▓▓▓▓▓▓░░░░│░░░░░░│░░░│░░░░░░░  ← cue marks  │
+  │                    ▶                          │
+  │  ▓▓░░░░░░░░│░░░░░░│░░░░░░░░░░  ← cue marks      │
   └──────────────────────────────────────────────┘
-  ┌─ Following along · 1:12 ──────────────────────┐   companion region —
-  │  Keep your thumb behind the neck …            │   swaps content as each
-  │  [ chord diagram — Em ]                       │   cue is reached; never
-  │  ↑ earlier: "Tune to EADGBE" · "Name strings" │   over the video
-  └──────────────────────────────────────────────┘
+
+  1:12  cue active — video shrinks, content takes the freed space (beside it
+        in landscape, below in portrait); one continuous frame, no label
+  ┌───────────────────────────┬──────────────────┐
+  │            ▶              │  Thumb behind    │
+  │  ▓▓▓▓▓▓░░│░░░░│░░░░░░       │  the neck …      │
+  │                           │  [ Em diagram ]  │
+  └───────────────────────────┴──────────────────┘
+        …cue passes → video reclaims the full frame
+
   When the video ends…                     [ Go to practice ]
                                     (no challenge → [ Mark complete ])
-
-  portrait: companion below the player   ·   landscape: companion beside it
 ```
 
 **S7 — Practice** (immersive, in-shell; result inline)
@@ -355,15 +360,15 @@ Rough reference for the three screens that anchor the loop:
 | Does the holding state (S4) poll, or is it refresh-only? | Refresh-only; a "Check again" link, no polling |
 | Is the challenge a peer screen or part of the node? | Part of the node (ADR-015) — S7 entered from S6 only |
 | How is the path grouped? | Teacher-set section label per step; no knowledge-graph dependency (ADR-015) |
-| Can S6/S7 use multi-column / landscape? | S6 is a player + companion region (stacked in portrait, side by side in landscape); S7 is responsive, two-region in landscape; no forced rotation (ADR-015) |
-| Is S6 a video-plus-panels page, an overlay-in-player, or something else? | Player + a playback-synced companion region that swaps in each timed note / resource; never overlaid on the video (ADR-015, revised twice) |
+| Can S6/S7 use multi-column / landscape? | S6 splits video / timed-content while a cue is active (side by side in landscape, stacked in portrait); S7 is responsive, two-region in landscape; no forced rotation (ADR-015) |
+| Is S6 a video-plus-panels page, an overlay, or something else? | A dynamic layout — video fills the frame, shrinks to share it with timed content only while a cue is active; content is continuous with the frame, never over the video (ADR-015) |
 
 ### Still open
 
 | Question | Owner | Note |
 |---|---|---|
 | Does a node with a challenge require *passing* it to count as complete, or is finishing the lesson enough for the alpha? | Gilson | Defer to PB-8f + the rules engine; affects the S6→S7→S5 status flow |
-| Timed-resource cue schema — timestamp, resource reference, companion render style | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built. Authored as part of the video (see PB-8i) |
+| Timed-resource cue schema — timestamp, resource reference, render style | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built. Authored as part of the video (see PB-8i) |
 | Where in the concierge flow does the teacher set section labels, and what guidance keeps them consistent? | Gilson | Authoring-side; feeds the `learning-paths` spec revision (ADR-015 follow-up) |
 | Landscape breakpoint and behaviour for S7 (two-region) and the S6 player | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
 

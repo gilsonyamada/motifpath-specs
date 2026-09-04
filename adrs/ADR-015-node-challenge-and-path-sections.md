@@ -78,24 +78,26 @@ path as a self-contained sequence of steps that the path itself groups into name
    content classification. Any future "derive sections from the knowledge graph" capability
    is a separate, additive decision and a separate backlog item.
 
-4. **S6 is a video player plus a playback-synced companion region — two components, not
-   one, and nothing overlaid on the video.** A content node's notes and timed complementary
-   resources are authored against the video timeline (see PB-8i). As playback reaches each
-   cue, the companion region swaps in that note / resource; it never covers the video
-   (which would hide the part of the frame the note is about) and it never pauses playback.
-   A cue carries a timestamp and its resource — no focus mode, no picture-in-picture.
-   Portrait places the companion below the player; landscape places it beside. The node's
-   practice step (or "mark complete") appears when the video ends.
+4. **S6 is a dynamic video layout.** By default the video fills the frame. When playback
+   reaches a timed cue, the video shrinks and the cue's content (a note, a resource) takes
+   the space it gave up — beside the video in landscape (the reference case), below it in
+   portrait. The content is visually continuous with the video frame — it reads as part of
+   the lesson, not an overlay and not a separate panel with its own chrome (no header
+   label). When the cue passes, the video reclaims the full frame. Playback never pauses. A
+   cue carries a timestamp and its resource — no per-cue focus mode, no picture-in-picture.
+   The node's practice step (or "mark complete") appears when the video ends. Timed content
+   is authored against the video timeline (see PB-8i).
 
 5. **Time-box language leaves the product.** Fixtures and examples that imply a schedule are
    renamed to competency names. No student-facing surface refers to weeks, days, or due
    dates.
 
 This decision also revises PB-8j page anatomy. The "single column, mobile-first, no
-multi-column" rule holds for S0–S5 and S8. **S6 is a player plus a playback-synced companion
-region** — stacked in portrait, side by side in landscape. **S7 is responsive** — a single
-column in portrait, prompt and answer input side by side in landscape. There is no forced
-rotation, and S7 stays within the app shell (the header remains).
+multi-column" rule holds for S0–S5 and S8. **S6 is a dynamic video layout** — video fills
+the frame, and shares it with timed content only while a cue is active (content beside the
+video in landscape, below it in portrait). **S7 is responsive** — a single column in
+portrait, prompt and answer input side by side in landscape. There is no forced rotation,
+and S7 stays within the app shell (the header remains).
 
 ## Rationale
 
@@ -147,12 +149,12 @@ student experience; "immersive" is a visual-density decision, not a structural o
   an odd-looking path; authoring guidance must call this out.
 - "Section" is a new student-facing term that must stay distinct from "path", "step", and
   "node" to avoid vocabulary drift.
-- The timed-resource cue is a new content-authoring concept (timestamp + resource +
-  companion render style) with no schema yet; it must be specified before PB-8e can build
-  S6, and it belongs to the content-authoring flow (PB-8i).
-- S7's responsive two-region landscape layout and the S6 player's landscape behaviour are
-  more layout work than a fixed column, and need a real device/orientation test pass that
-  the other screens do not.
+- The timed-resource cue is a new content-authoring concept (timestamp + resource + render
+  style) with no schema yet; it must be specified before PB-8e can build S6, and it belongs
+  to the content-authoring flow (PB-8i).
+- S6's dynamic video/content split and S7's responsive two-region landscape layout are more
+  layout work than a fixed column, and need a real device/orientation test pass that the
+  other screens do not.
 
 ### Neutral
 
@@ -174,7 +176,7 @@ student experience; "immersive" is a visual-density decision, not a structural o
 - Revise `openapi/core-domain-service.yaml` and `openapi/components/schemas/` for the
   optional path-step section label — separate spec PR, PO-approved, with revised
   `learning-paths.feature` and `student-path-view.feature`.
-- Specify the timed-resource cue (timestamp, resource reference, companion render style) in
+- Specify the timed-resource cue (timestamp, resource reference, render style) in
   the content spec before PB-8e; it is authored as part of the video (see PB-8i).
 - Rename time-box fixtures ("week-1-path", "Beginner Guitar — Week 1") across
   `features/learning-paths/`.
