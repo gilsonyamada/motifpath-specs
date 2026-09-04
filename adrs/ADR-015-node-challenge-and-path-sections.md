@@ -78,24 +78,24 @@ path as a self-contained sequence of steps that the path itself groups into name
    content classification. Any future "derive sections from the knowledge graph" capability
    is a separate, additive decision and a separate backlog item.
 
-4. **S6 is a single video player.** It is not a page with a video plus panels. A content
-   node's notes and timed complementary resources are authored as part of the video — the
-   teacher adds them like edits baked into the recording — and surface *within the player*
-   at their cue (an overlay, a lower-third, an annotation on the video surface), never as a
-   separate framed panel, and never pausing playback. A cue carries a timestamp and its
-   resource; there is no focus mode and no picture-in-picture. The node's practice step (or
-   "mark complete") appears when the video ends.
+4. **S6 is a video player plus a playback-synced companion region — two components, not
+   one, and nothing overlaid on the video.** A content node's notes and timed complementary
+   resources are authored against the video timeline (see PB-8i). As playback reaches each
+   cue, the companion region swaps in that note / resource; it never covers the video
+   (which would hide the part of the frame the note is about) and it never pauses playback.
+   A cue carries a timestamp and its resource — no focus mode, no picture-in-picture.
+   Portrait places the companion below the player; landscape places it beside. The node's
+   practice step (or "mark complete") appears when the video ends.
 
 5. **Time-box language leaves the product.** Fixtures and examples that imply a schedule are
    renamed to competency names. No student-facing surface refers to weeks, days, or due
    dates.
 
 This decision also revises PB-8j page anatomy. The "single column, mobile-first, no
-multi-column" rule holds for S0–S5 and S8. **S6 is a single video player** — portrait shows
-the player plus one control row; landscape lets the player fill the screen. **S7 is
-responsive** — a single column in portrait, prompt and answer input side by side in
-landscape. There is no forced rotation, and S7 stays within the app shell (the header
-remains).
+multi-column" rule holds for S0–S5 and S8. **S6 is a player plus a playback-synced companion
+region** — stacked in portrait, side by side in landscape. **S7 is responsive** — a single
+column in portrait, prompt and answer input side by side in landscape. There is no forced
+rotation, and S7 stays within the app shell (the header remains).
 
 ## Rationale
 
@@ -148,7 +148,7 @@ student experience; "immersive" is a visual-density decision, not a structural o
 - "Section" is a new student-facing term that must stay distinct from "path", "step", and
   "node" to avoid vocabulary drift.
 - The timed-resource cue is a new content-authoring concept (timestamp + resource +
-  in-player render style) with no schema yet; it must be specified before PB-8e can build
+  companion render style) with no schema yet; it must be specified before PB-8e can build
   S6, and it belongs to the content-authoring flow (PB-8i).
 - S7's responsive two-region landscape layout and the S6 player's landscape behaviour are
   more layout work than a fixed column, and need a real device/orientation test pass that
@@ -174,7 +174,7 @@ student experience; "immersive" is a visual-density decision, not a structural o
 - Revise `openapi/core-domain-service.yaml` and `openapi/components/schemas/` for the
   optional path-step section label — separate spec PR, PO-approved, with revised
   `learning-paths.feature` and `student-path-view.feature`.
-- Specify the timed-resource cue (timestamp, resource reference, in-player render style) in
+- Specify the timed-resource cue (timestamp, resource reference, companion render style) in
   the content spec before PB-8e; it is authored as part of the video (see PB-8i).
 - Rename time-box fixtures ("week-1-path", "Beginner Guitar — Week 1") across
   `features/learning-paths/`.

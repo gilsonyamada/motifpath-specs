@@ -7,7 +7,7 @@
     { "file": "RegistrationError.dc.html", "x": 1680, "y": 960, "w": 440, "h": 470 },
     { "file": "PathHolding.dc.html", "x": 0, "y": 1660, "w": 440, "h": 540 },
     { "file": "MyPath.dc.html", "x": 560, "y": 1660, "w": 440, "h": 840 },
-    { "file": "NodeLesson.dc.html", "x": 1120, "y": 1660, "w": 440, "h": 660 },
+    { "file": "NodeLesson.dc.html", "x": 1120, "y": 1660, "w": 440, "h": 760 },
     { "file": "Practice.dc.html", "x": 1680, "y": 1660, "w": 440, "h": 800 },
     { "file": "NotFound.dc.html", "x": 0, "y": 2720, "w": 440, "h": 420 }
   ],
@@ -16,7 +16,7 @@
     { "id": "note-anatomy", "x": 2260, "y": 960, "w": 340, "text": "One page skeleton for every authenticated screen (formalises AuthenticatedLayout.vue): sticky header → optional context bar (S6/S7) → page head owns the h1 + at most one primary action → content region. Single centred column for S0–S5, S8. S6/S7 are responsive (see ADR-015). Loading / error / empty replace the content region, never the header." },
     { "id": "note-s4", "x": 2260, "y": 1400, "w": 340, "text": "S4 is a STATE of S5, not a route. GET /students/me/path returns not-found → the path screen renders the holding variant. This is the 'landed in the app' endpoint for PB-8c's success definition. Refresh-only, no polling. Impersonal copy — no assumed teacher." },
     { "id": "note-sections", "x": 2260, "y": 1720, "w": 340, "text": "ADR-015: S5 groups steps into competency-named sections from an OPTIONAL teacher-set label on each path step. Consecutive steps sharing a label group under it; no label → flat list. Path data only — the student path has NO dependency on the taxonomy / knowledge graph. No 'Week N' framing anywhere." },
-    { "id": "note-s6", "x": 2260, "y": 2060, "w": 340, "text": "ADR-015: S6 is a SINGLE VIDEO PLAYER — not a video-plus-panels page. Notes and timed resources are authored into the video and surface inside the player at their cue (overlay / annotation), never pausing playback, never a separate panel. No focus modes, no PiP. The challenge is the node's practice step — 'Go to practice' (or 'Mark complete') appears when the video ends; S7 is entered from S6 only. Portrait: player + one row. Landscape: player fills the screen." },
+    { "id": "note-s6", "x": 2260, "y": 2060, "w": 340, "text": "ADR-015 (S6 revised twice): S6 is a video PLAYER + a playback-synced COMPANION REGION — two components, nothing overlaid on the video (an overlay hides the frame the note is about). The companion swaps in each timed note / resource as its cue is reached; cues never pause playback. Portrait: companion below the player. Landscape: beside it. No focus modes, no PiP. The challenge is the node's practice step — 'Go to practice' / 'Mark complete' appears when the video ends; S7 entered from S6 only." },
     { "id": "note-events", "x": 2260, "y": 2400, "w": 340, "text": "Node completion is event-driven. No 'complete node' endpoint — the SPA emits lesson.completed and exercise.* ; the Aggregation Worker derives node status, section status derives from step status (ADR-011). The path reflects status on next load." },
     { "id": "note-tokens", "x": 2260, "y": 2680, "w": 340, "text": "No colour commitment here. Semantic token roles (page surface, body ink, primary action, locked, success, danger) are defined in the spec doc; motif-blue / motif-ink / motif-cream hex is a parallel motifpath-brand task, plus motif-success / motif-danger to add to tailwind.config.ts." }
   ],
