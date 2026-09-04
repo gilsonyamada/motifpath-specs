@@ -21,12 +21,14 @@ below; **ADR-015** carries the decisions and their rationale.
    one. The student path stays self-contained — **no dependency on the knowledge graph.**
 3. **All time-box framing is removed.** No "Week N", no schedule, no due dates on any
    student-facing surface.
-4. **S6 is video-first, with timed complementary resources.** Cues fire at points in
-   playback without stopping the video; each cue has a focus mode (video-primary or
-   resource-primary).
-5. **S6 and S7 are responsive; the "single column, no multi-column" rule no longer applies
-   to them.** Portrait is a single column; landscape and wider viewports get a two-region
-   layout. No forced rotation. S7 is visually immersive but stays inside the app shell.
+4. **S6 is a single video player — kept as simple as possible.** Notes and timed
+   complementary resources are authored into the video and surface *inside the player* at
+   their cue (overlay / annotation), never a separate panel, never pausing playback. No
+   focus modes, no picture-in-picture — that was an over-built version, corrected.
+5. **S7 is responsive; the "single column, no multi-column" rule no longer applies to it.**
+   Portrait is a single column; landscape puts the prompt and input side by side. No forced
+   rotation. S7 is visually immersive but stays inside the app shell. S6 stays a single
+   player (portrait: player + one control row; landscape: player fills the screen).
 
 ## Purpose
 
@@ -79,7 +81,7 @@ next, let them do it, and show progress.**
 | S3 | Registration error | `/welcome/error` | PB-8c | Recover a failed registration | Try again | — |
 | S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "We're building your personalized path" | *(none; refresh)* | empty (holding) |
 | S5 | My Path | `/path` | PB-8d | The spine: steps in order grouped into sections, status, what's next | Open current step | loading, error, empty (S4) |
-| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Video-first: the media, its timed complementary resources, and the node's practice step | Mark complete → *or* Go to practice | loading, error, locked |
+| S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | A single video player; notes + timed resources are authored into the video; the practice step appears when it ends | Mark complete → *or* Go to practice | loading, error, locked |
 | S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell | Submit answer → Finish | loading, error, in-progress, result |
 | S8 | Not found | `/:pathMatch(.*)*` | PB-8b | 404 | Back to path | — |
 
@@ -179,43 +181,39 @@ One skeleton for every authenticated screen. Formalises `AuthenticatedLayout.vue
 Rules:
 - **Single column, mobile-first — for S0–S5 and S8.** No multi-column layouts on those
   screens. Content column `max-w-3xl`/`max-w-4xl`, horizontal padding on small screens.
-  **S6 and S7 are the exception** — see below.
+  **S6 is a single video player and S7 is responsive** — see below.
 - **One primary action per screen.** Secondary actions are text links, visually quieter.
 - **The page head owns the h1.** Screens do not render their own top-level heading inside the
   content column.
 - **Loading / error / empty replace the content column**, never the header.
 
-### S6 / S7 — responsive layout (ADR-015)
+### S6 — lesson screen anatomy (ADR-015)
 
-S6 and S7 keep the header and context bar, but their content region is **responsive**, not a
-fixed single column:
+**S6 is a single video player.** It is not a page with a video plus panels. Keep it as
+simple as possible — the student's model is "I am watching a lesson", nothing more.
 
-- **Portrait / narrow:** a single column. In S6 the video/article pins to the top of the
-  viewport and stays visible while the rest of the content scrolls beneath it.
-- **Landscape / wide:** a **two-region** layout — a primary region and a secondary region
-  side by side. In S6 the video is primary and its resources are secondary; in S7 the
-  exercise prompt and the answer input sit side by side.
-- **No forced rotation.** The student is never told to turn their device; both orientations
-  are first-class.
-
-### S6 — lesson screen anatomy
-
-- **The media is primary and above the fold on load.** A small or below-the-fold player is
-  the top predicted cause of alpha dropout — the video must be the first thing the student
-  sees, at a usable size.
-- **Timed complementary resources** are driven by cues on the content node. A cue carries a
-  timestamp, the resource, and a **focus mode**, set per cue by the teacher:
-  - `video` — the video stays primary; the resource appears in the secondary region (or
-    below, in portrait).
-  - `resource` — the resource becomes primary; the video shrinks to a pinned secondary
-    position **but keeps playing**.
-  The video never stops when a cue fires.
-- **The practice step** (if the node has a challenge) is a single "Go to practice" affordance
-  at the natural end of the flow — not a card competing with the video mid-screen.
-- The cue schema (timestamp, resource reference, focus mode) is **not yet specified** — it is
-  a content-spec prerequisite for PB-8e (see Open questions).
+- **The player is the content surface.** It fills the view at a usable size; a small or
+  below-the-fold player is the top predicted cause of alpha dropout.
+- **Notes and timed complementary resources are authored into the video.** The teacher adds
+  them as part of the lesson — like edits baked into the recording. They surface **inside
+  the player** at their cue (an overlay card, a lower-third, an annotation on the video
+  surface), never as a separate framed panel below the video, and **never pause playback**.
+- **A cue carries a timestamp and its resource.** There is no "focus mode" and no
+  video-shrinks-to-a-corner behaviour — that was the over-built version. Everything renders
+  within the one player surface.
+- **The practice step** (if the node has a challenge) is a single affordance that appears
+  when the video ends — "Go to practice", or "Mark complete" for a node with no challenge.
+  It does not compete with the video while it is playing.
+- **Orientation:** portrait shows the player plus that one control row; landscape lets the
+  player fill the screen. No two-region split, no forced rotation.
+- The cue schema (timestamp, resource reference, render style) is **not yet specified** — it
+  is a content-spec prerequisite for PB-8e (see Open questions).
 
 ### S7 — practice screen anatomy
+
+S7 keeps the header and context bar; its content region is **responsive** (portrait: a
+single column; landscape: exercise prompt and answer input side by side). No forced
+rotation.
 
 - **Immersive, but in-shell.** The header stays; S7 does not break out into a chrome-less
   full-screen mode. "Immersive" is visual density and focus — high-contrast, minimal
@@ -306,25 +304,24 @@ Rough reference for the three screens that anchor the loop:
   🔒  Two-chord song: "…"               locked
 ```
 
-**S6 — Node / Lesson** (video-first; timed resources with per-cue focus)
+**S6 — Node / Lesson** (a single video player; notes + resources baked into the video)
 
 ```
-  ‹ Back to path
+  ‹ Back to path                                    Step 2 of 5
 
-  Your first chord: E minor                    [ Mark complete ]
-  ────────────────────────────────────
-  ┌──────────────────────────────────┐
-  │  ▶  video — primary, above fold  │   portrait: pins to top while content scrolls
-  └──────────────────────────────────┘   landscape: video left, resources right
+  Your first chord: E minor
+  ┌──────────────────────────────────────────────┐
+  │                    ▶                          │
+  │   ┌────────────────────────────────────────┐  │  overlay card, at its cue,
+  │   │ @ 1:10 — teacher note                   │  │  INSIDE the player — not a
+  │   │ Thumb behind the neck. [ Em diagram ]   │  │  panel below the video
+  │   └────────────────────────────────────────┘  │
+  │   ▓▓▓▓▓▓▓▓░░░░│░░░░░░│░░░│░░░░░░░  ← cue marks  │
+  └──────────────────────────────────────────────┘
+  When the video ends…                     [ Go to practice ]
+                                    (no challenge → [ Mark complete ])
 
-  Notes
-  Place your fingers on …
-
-  ⤷ cue @ 1:10  [ chord diagram — Em ]   focus: video  → resource shows secondary
-  ⤷ cue @ 2:40  [ full-screen tab map ]  focus: resource → video shrinks, keeps playing
-
-  ── node has a challenge ──
-  Ready to try it?                             [ Go to practice ]
+  portrait: player + that one row   ·   landscape: player fills the screen
 ```
 
 **S7 — Practice** (immersive, in-shell; result inline)
@@ -357,16 +354,17 @@ Rough reference for the three screens that anchor the loop:
 | Does the holding state (S4) poll, or is it refresh-only? | Refresh-only; a "Check again" link, no polling |
 | Is the challenge a peer screen or part of the node? | Part of the node (ADR-015) — S7 entered from S6 only |
 | How is the path grouped? | Teacher-set section label per step; no knowledge-graph dependency (ADR-015) |
-| Can S6/S7 use multi-column / landscape? | Yes — S6/S7 responsive, two-region in landscape, no forced rotation (ADR-015) |
+| Can S6/S7 use multi-column / landscape? | S6 is a single player (landscape = player fills the screen); S7 is responsive, two-region in landscape; no forced rotation (ADR-015) |
+| Is S6 a video-plus-panels page or a single player? | A single player — notes and timed resources are authored into the video and surface in-player (ADR-015) |
 
 ### Still open
 
 | Question | Owner | Note |
 |---|---|---|
 | Does a node with a challenge require *passing* it to count as complete, or is finishing the lesson enough for the alpha? | Gilson | Defer to PB-8f + the rules engine; affects the S6→S7→S5 status flow |
-| Timed-resource cue schema — timestamp, resource reference, focus mode | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built |
+| Timed-resource cue schema — timestamp, resource reference, in-player render style | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built. Authored as part of the video (see PB-8i) |
 | Where in the concierge flow does the teacher set section labels, and what guidance keeps them consistent? | Gilson | Authoring-side; feeds the `learning-paths` spec revision (ADR-015 follow-up) |
-| Landscape two-region breakpoint and behaviour for S6/S7 | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
+| Landscape breakpoint and behaviour for S7 (two-region) and the S6 player | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
 
 ---
 

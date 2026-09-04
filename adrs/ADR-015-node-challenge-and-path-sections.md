@@ -78,21 +78,24 @@ path as a self-contained sequence of steps that the path itself groups into name
    content classification. Any future "derive sections from the knowledge graph" capability
    is a separate, additive decision and a separate backlog item.
 
-4. **Timed complementary resources have a per-cue focus mode.** A content node's timed
-   resources are cues, each carrying a timestamp, the resource, and a focus mode: either the
-   video stays primary and the resource appears secondary, or the resource becomes primary
-   and the video shrinks to a secondary position but keeps playing. The teacher sets the
-   focus mode per cue. The video never stops when a cue fires.
+4. **S6 is a single video player.** It is not a page with a video plus panels. A content
+   node's notes and timed complementary resources are authored as part of the video — the
+   teacher adds them like edits baked into the recording — and surface *within the player*
+   at their cue (an overlay, a lower-third, an annotation on the video surface), never as a
+   separate framed panel, and never pausing playback. A cue carries a timestamp and its
+   resource; there is no focus mode and no picture-in-picture. The node's practice step (or
+   "mark complete") appears when the video ends.
 
 5. **Time-box language leaves the product.** Fixtures and examples that imply a schedule are
    renamed to competency names. No student-facing surface refers to weeks, days, or due
    dates.
 
-This decision also revises one PB-8j rule: the "single column, mobile-first, no
-multi-column" page anatomy holds for S0–S5 and S8, but **S6 and S7 are responsive** — a
-single column in portrait, and a two-region layout in landscape and on wider viewports.
-There is no forced rotation. S7 is visually immersive but stays within the app shell (the
-header remains).
+This decision also revises PB-8j page anatomy. The "single column, mobile-first, no
+multi-column" rule holds for S0–S5 and S8. **S6 is a single video player** — portrait shows
+the player plus one control row; landscape lets the player fill the screen. **S7 is
+responsive** — a single column in portrait, prompt and answer input side by side in
+landscape. There is no forced rotation, and S7 stays within the app shell (the header
+remains).
 
 ## Rationale
 
@@ -144,10 +147,12 @@ student experience; "immersive" is a visual-density decision, not a structural o
   an odd-looking path; authoring guidance must call this out.
 - "Section" is a new student-facing term that must stay distinct from "path", "step", and
   "node" to avoid vocabulary drift.
-- The timed-resource cue is a new content-authoring concept (timestamp + resource + focus
-  mode) with no schema yet; it must be specified before PB-8e can build S6.
-- Responsive S6/S7 is more layout work than a single fixed column, and needs a real
-  device/orientation test pass that the other screens do not.
+- The timed-resource cue is a new content-authoring concept (timestamp + resource +
+  in-player render style) with no schema yet; it must be specified before PB-8e can build
+  S6, and it belongs to the content-authoring flow (PB-8i).
+- S7's responsive two-region landscape layout and the S6 player's landscape behaviour are
+  more layout work than a fixed column, and need a real device/orientation test pass that
+  the other screens do not.
 
 ### Neutral
 
@@ -169,8 +174,8 @@ student experience; "immersive" is a visual-density decision, not a structural o
 - Revise `openapi/core-domain-service.yaml` and `openapi/components/schemas/` for the
   optional path-step section label — separate spec PR, PO-approved, with revised
   `learning-paths.feature` and `student-path-view.feature`.
-- Specify the timed-resource cue (timestamp, resource reference, focus mode) in the content
-  spec before PB-8e.
+- Specify the timed-resource cue (timestamp, resource reference, in-player render style) in
+  the content spec before PB-8e; it is authored as part of the video (see PB-8i).
 - Rename time-box fixtures ("week-1-path", "Beginner Guitar — Week 1") across
   `features/learning-paths/`.
 - New backlog item: "derive path sections from the knowledge graph" — deferred, additive,
