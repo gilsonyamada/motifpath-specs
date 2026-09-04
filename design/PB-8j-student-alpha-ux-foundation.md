@@ -83,7 +83,7 @@ next, let them do it, and show progress.**
 | S4 | My Path — holding | `/path` (no assignment) | PB-8c → PB-8d | "We're building your personalized path" | *(none; refresh)* | empty (holding) |
 | S5 | My Path | `/path` | PB-8d | The spine: steps in order grouped into sections, status, what's next | Open current step | loading, error, empty (S4) |
 | S6 | Node / Lesson | `/path/nodes/:nodeId` | PB-8e | Dynamic video layout — video fills the frame, shrinks to share it with timed content while a cue is active; practice step appears when the video ends | Mark complete → *or* Go to practice | loading, error, locked |
-| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell | Submit answer → Finish | loading, error, in-progress, result |
+| S7 | Practice | `/path/nodes/:nodeId/practice` | PB-8f | Run the challenge's exercises; show the result. Immersive, in-shell. Fixed regions: navigator · statement · interaction · help | Submit / interact → Finish | loading, error, in-progress, result |
 | S8 | Not found | `/:pathMatch(.*)*` | PB-8b | 404 | Back to path | — |
 
 Notes:
@@ -225,6 +225,16 @@ rotation.
 - Entered from within S6; "‹ Back to lesson" and browser-back both return to S6.
 - Result is shown **inline** in S7, then "Finish" returns to S6 → S5.
 
+**S7 has structural regions PB-8j fixes now and detail PB-8f owns.** PB-8j locks that S7
+contains, in this order: a **progress / navigator bar** (e.g. "2 of 4"), a **question
+statement** region, an **answer / interaction** region, and a **help affordance** (a control
+that opens instructions for the current exercise in a modal or panel). PB-8f decides
+everything below that: exercise-type rendering, whether the navigator lets a student move
+back to an answered exercise, ordered vs. randomised exercise sequences, and whether an
+exercise type takes an explicit "Submit" or treats a single interaction as the answer. S7's
+region layout must stay modular so those variations drop in without a rebuild — this screen
+is expected to evolve heavily.
+
 ---
 
 ## Standard states
@@ -330,20 +340,28 @@ Rough reference for the three screens that anchor the loop:
                                     (no challenge → [ Mark complete ])
 ```
 
-**S7 — Practice** (immersive, in-shell; result inline)
+**S7 — Practice** (immersive, in-shell; result inline). PB-8j fixes the regions; PB-8f fills them.
 
 ```
   ‹ Back to lesson
 
-  Practice — E minor                           2 of 4
+  Practice — E minor          ● ● ○ ○   2 of 4        [ ? Help ]
   ────────────────────────────────────
-  portrait:  prompt, then input, stacked
-  landscape: prompt | input, side by side
+  Question statement
+  "Which fret is the low E?"                          ← statement region
 
-  [ Submit answer ]
+  [ answer / interaction region ]                     ← per-type: click-as-answer
+  portrait: statement then interaction, stacked          or explicit submit (PB-8f)
+  landscape: statement | interaction, side by side
+
+  [ Submit ]  (only for exercise types that need it)
   ── on finish ──
   Result: 3 of 4 correct                       [ Finish ]
 ```
+
+Regions PB-8j locks: navigator/progress bar · question statement · answer / interaction ·
+help affordance. PB-8f owns: exercise-type rendering, move-back-between-exercises, ordered
+vs. randomised sequence, submit vs. click-as-answer.
 
 ---
 
@@ -371,6 +389,10 @@ Rough reference for the three screens that anchor the loop:
 | Timed-resource cue schema — timestamp, resource reference, render style | Gilson + content spec | **Blocks PB-8e.** Needs a `content-management` spec before S6 can be built. Authored as part of the video (see PB-8i) |
 | Where in the concierge flow does the teacher set section labels, and what guidance keeps them consistent? | Gilson | Authoring-side; feeds the `learning-paths` spec revision (ADR-015 follow-up) |
 | Landscape breakpoint and behaviour for S7 (two-region) and the S6 player | Gilson | Needs the hi-fi canvas + a real device/orientation test pass |
+| S7: does the navigator let a student move back to an answered exercise? | Gilson | PB-8f + assessment model — affects whether answers are revisable |
+| S7: ordered vs. randomised exercise sequence (some exercises have no natural order) | Gilson | PB-8f + `content-management` / challenge model |
+| S7: which exercise types take an explicit "Submit" vs. treat one interaction as the answer? | Gilson | PB-8f + exercise-type model; affects `exercise.answer_sent` semantics |
+| S7: help content — where authored, per exercise or per challenge? | Gilson | PB-8f + content model |
 
 ---
 
