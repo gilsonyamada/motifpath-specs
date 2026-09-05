@@ -1,6 +1,6 @@
 # ADR-015: Challenge belongs to the path node; the student path is a self-contained sectioned sequence
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-03
 **Deciders:** Gilson (Product Owner)
 
