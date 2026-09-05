@@ -56,6 +56,22 @@ Feature: Student path view
     When "alice" retrieves her current path
     Then each item in the response includes a title and content_type
 
+  # ── Section labels ─────────────────────────────────────────────────────────
+
+  Scenario: The path view has no section labels when the path defines none
+    Given "alice" is authenticated as a student
+    And "alice" has "week-1-path" assigned
+    When "alice" retrieves her current path
+    Then none of the items have a section_label
+
+  Scenario: The path view includes each item's section label when the path defines one
+    Given "alice" is authenticated as a student
+    And a learning path "rhythm-foundations-path" exists with "node-01" and "node-02" in section "Open chords" and "node-03" in section "Strumming patterns"
+    And "alice" has "rhythm-foundations-path" assigned
+    When "alice" retrieves her current path
+    Then "node-01" and "node-02" have section_label "Open chords"
+    And "node-03" has section_label "Strumming patterns"
+
   # ── Not found ─────────────────────────────────────────────────────────────
 
   Scenario: A student with no active assignment gets not found

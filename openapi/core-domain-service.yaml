@@ -600,6 +600,17 @@ paths:
                     - content_node_id: "c9d1e2f3-0000-0000-0000-000000000001"
                     - content_node_id: "c9d1e2f3-0000-0000-0000-000000000002"
                     - content_node_id: "c9d1e2f3-0000-0000-0000-000000000003"
+              rhythm_foundations_with_sections:
+                summary: A path whose items are grouped into named sections
+                value:
+                  title: "Rhythm Foundations"
+                  items:
+                    - content_node_id: "c9d1e2f3-0000-0000-0000-000000000001"
+                      section_label: "Open chords"
+                    - content_node_id: "c9d1e2f3-0000-0000-0000-000000000002"
+                      section_label: "Open chords"
+                    - content_node_id: "c9d1e2f3-0000-0000-0000-000000000003"
+                      section_label: "Strumming patterns"
       responses:
         "201":
           description: Learning path created.
@@ -957,6 +968,16 @@ components:
                 type: string
                 format: uuid
                 description: The ID of the content node at this position. Must exist in the system.
+              section_label:
+                type: string
+                description: >-
+                  Optional label grouping this item with its immediate
+                  neighbors under a named section in the resulting path view.
+                  Consecutive items that share the same label render together
+                  under that heading in the teacher, admin, and student path
+                  views; items with no label, or a different label than their
+                  neighbor, render ungrouped. Names a competency or skill
+                  area — never a time period or schedule.
             required:
               - content_node_id
       required:
@@ -984,6 +1005,14 @@ components:
             - video
             - article
           description: Media format of the content node, denormalised for display.
+        section_label:
+          type: string
+          description: >-
+            Optional label grouping this item with its immediate neighbors
+            under a named section. Consecutive items that share the same
+            label render together under that heading; items with no label,
+            or a different label than their neighbor, render ungrouped.
+            Names a competency or skill area, not a time period.
       required:
         - position
         - content_node_id
@@ -1097,6 +1126,15 @@ components:
             The student's current progress state for this item. completed — finished.
             in_progress — started but not finished. not_started — not yet reached.
             locked — a preceding item must be completed first.
+        section_label:
+          type: string
+          description: >-
+            Optional label grouping this item with its immediate neighbors
+            under a named section in the student's path view. Consecutive
+            items that share the same label render together under that
+            heading; items with no label, or a different label than their
+            neighbor, render ungrouped. Names a competency or skill area,
+            not a time period.
       required:
         - position
         - content_node_id
