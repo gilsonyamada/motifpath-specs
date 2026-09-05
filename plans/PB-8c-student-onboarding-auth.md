@@ -3,7 +3,7 @@
 **Task:** PB-8c
 **Date:** 2026-08-31
 **Author:** Gilson
-**Status:** Draft
+**Status:** Ready
 
 ---
 
@@ -58,10 +58,10 @@ PB-8c (Notion PB-19).
 
 ## Prerequisites
 
-- [ ] **PB-8j — Student alpha UX foundation** accepted. PB-8c screens (sign-in, `/welcome`
-      interstitial, registration error, the no-path holding state) are implemented against the
-      screen inventory, page anatomy, and state components defined there
-      (`design/PB-8j-student-alpha-ux-foundation.md`)
+- [x] **PB-8j — Student alpha UX foundation** accepted 2026-09-05 (ADR-015, motifpath-specs#22/23).
+      PB-8c screens (sign-in, `/welcome` interstitial, registration error, the no-path holding
+      state) are implemented against the screen inventory, page anatomy, and state components
+      defined there (`design/PB-8j-student-alpha-ux-foundation.md`)
 - [x] ADR-007 (Clerk auth + local JWT validation) accepted
 - [x] `POST /users` and `GET /users/me` defined in `openapi/core-domain-service.yaml` and merged
 - [x] PB-8b merged: `@clerk/vue`, `useAuth`, `authBridge`, generated core client, app shell,
@@ -69,8 +69,8 @@ PB-8c (Notion PB-19).
 - [x] `features/user-registration/register-user.feature` covers the backend contract
 - [ ] Clerk dev instance with Google OAuth enabled and a publishable key (Gilson)
 - [ ] `motifpath-core` runs locally with a real Clerk secret key for the end-to-end smoke (Gilson)
-- [ ] PB-8b loose end resolved or consciously ignored: `feat/PB-8b/local-dev-wiring` has one
-      unmerged `docs:` commit not on `dev`
+- [x] PB-8b loose end already resolved — the `feat/PB-8b/local-dev-wiring` docs commit merged to
+      `dev` via `motifpath-web`#5 on 2026-08-31; not a blocker
 
 ---
 
@@ -198,12 +198,12 @@ inert without it.
 
 | Question | Owner | Resolution |
 |---|---|---|
-| Registration bridge as a dedicated `/welcome` interstitial route vs. a gate component wrapping `<RouterView>` in `App.vue`? | Gilson | Proposed: dedicated `/welcome` route — visible in the URL, independently testable, no guard/layout coupling |
-| Where does the student land post-registration — `/` or `/path`? | Gilson | Proposed: `?redirect=` target, default `path`, so the holding state is the first authenticated screen |
-| Should the 400 "role invalid" branch be handled distinctly, or folded into the generic failure state? | Gilson | Proposed: fold in — the SPA always sends `role: student`, so a 400 is a bug, not a user condition; generic error + logged |
-| How is onboarding completion rate actually measured, given PB-8c emits no event? | Gilson | Deferred to **PB-8h**: `registered_at` on `UserProfile` + Clerk sign-up counts, surfaced in the admin view. Note as a PB-8h input |
-| Does `POST /users` need client-side idempotency (e.g. guard against double-fire in React/Vue strict re-renders)? | Gilson | The store's `registering` state gates re-entry; verify no double-fire in the Phase 2 tests |
-| Is a `dev`-branch sync of the stray `feat/PB-8b/local-dev-wiring` docs commit a prerequisite, or handled separately? | Gilson | Proposed: separate tiny `docs` PB-8b PR, not a PB-8c blocker |
+| Registration bridge as a dedicated `/welcome` interstitial route vs. a gate component wrapping `<RouterView>` in `App.vue`? | Gilson | **Confirmed 2026-09-05:** dedicated `/welcome` route — visible in the URL, independently testable, no guard/layout coupling |
+| Where does the student land post-registration — `/` or `/path`? | Gilson | **Confirmed 2026-09-05:** `?redirect=` target, default `path`, so the holding state is the first authenticated screen |
+| Should the 400 "role invalid" branch be handled distinctly, or folded into the generic failure state? | Gilson | **Confirmed 2026-09-05:** fold in — the SPA always sends `role: student`, so a 400 is a bug, not a user condition; generic error + logged |
+| How is onboarding completion rate actually measured, given PB-8c emits no event? | Gilson | **Confirmed 2026-09-05:** deferred to **PB-8h**: `registered_at` on `UserProfile` + Clerk sign-up counts, surfaced in the admin view. PB-8c adds no metrics surface of its own |
+| Does `POST /users` need client-side idempotency (e.g. guard against double-fire in React/Vue strict re-renders)? | — | Resolved by design, not a product question: the store's `registering` state gates re-entry; verified directly in the Phase 2 Step 1 tests |
+| Is a `dev`-branch sync of the stray `feat/PB-8b/local-dev-wiring` docs commit a prerequisite, or handled separately? | — | **Already resolved** — merged via `motifpath-web`#5 on 2026-08-31; was never actually a blocker |
 
 ---
 
