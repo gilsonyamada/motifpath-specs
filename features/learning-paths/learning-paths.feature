@@ -27,6 +27,15 @@ Feature: Manage learning paths
     When "bob" retrieves the learning path "week-1-path"
     Then the response returns the path title, owner, and ordered items
 
+  # ── Section labels ─────────────────────────────────────────────────────────
+
+  Scenario: A teacher creates a learning path with items grouped into sections
+    Given "bob" is authenticated as a teacher
+    When "bob" creates a learning path titled "Rhythm Foundations" with items in order: "node-01" in section "Open chords", "node-02" in section "Open chords", "node-03" in section "Strumming patterns"
+    Then the learning path is created and assigned a stable identifier
+    And "node-01" and "node-02" are returned with section_label "Open chords"
+    And "node-03" is returned with section_label "Strumming patterns"
+
   # ── Validation failures ────────────────────────────────────────────────────
 
   Scenario: Creating a learning path without a title is rejected
