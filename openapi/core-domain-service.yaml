@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Core Domain Service
-  version: 0.4.0
+  version: 0.5.0
   license:
     name: Proprietary — MotifPath internal use only
     identifier: UNLICENSED
@@ -827,6 +827,53 @@ paths:
               schema:
                 $ref: '#/components/schemas/NotFoundError'
 
+  /healthz:
+    get:
+      operationId: livenessCheck
+      summary: Liveness probe
+      description: |
+        Returns 200 if the service process is running. Used by the deployment
+        platform to determine whether to restart the container. Does not check
+        downstream dependencies.
+      tags:
+        - Operations
+      security: []
+      responses:
+        "200":
+          description: Service is alive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
+  /readyz:
+    get:
+      operationId: readinessCheck
+      summary: Readiness probe
+      description: |
+        Returns 200 if the service is ready to accept traffic — the learning-graph
+        store (holding users, content, and learning paths) and the completion-state
+        store (holding aggregated node-completion state) are both reachable. The
+        deployment platform withholds traffic until this probe succeeds. Returns 503
+        during startup or if a dependency becomes unavailable, with the checks map
+        naming the failed dependency.
+      tags:
+        - Operations
+      security: []
+      responses:
+        "200":
+          description: Service is ready to accept traffic.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+        "503":
+          description: Service is not ready. One or more dependencies are unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -838,6 +885,9 @@ components:
         See ADR-007 for the full validation contract.
 
   schemas:
+    HealthStatus:
+      $ref: './components/schemas/health.yaml#/HealthStatus'
+
     CreateContentNodeRequest:
       type: object
       description: Payload for creating a new content node.

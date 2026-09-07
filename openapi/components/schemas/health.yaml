@@ -1,0 +1,27 @@
+HealthStatus:
+  type: object
+  description: |
+    Response body for liveness and readiness probes. Shared by every MotifPath
+    service that exposes an HTTP health surface so the contract cannot drift
+    between services.
+  properties:
+    status:
+      type: string
+      enum:
+        - ok
+        - degraded
+      description: |
+        ok — all checks passed. degraded — one or more dependency checks failed;
+        used only on the readiness probe when the service should be taken out of rotation.
+    checks:
+      type: object
+      description: |
+        Map of dependency name to its check result. Present on the readiness probe;
+        omitted on the liveness probe (which has no dependency checks).
+      additionalProperties:
+        type: string
+        enum:
+          - ok
+          - fail
+  required:
+    - status

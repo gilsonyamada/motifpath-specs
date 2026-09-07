@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: Event Ingestion Service
-  version: 0.1.0
+  version: 0.1.1
   license:
     name: Proprietary — MotifPath internal use only
     identifier: UNLICENSED
@@ -452,26 +452,4 @@ components:
             stored on the entry for audit purposes.
 
     HealthStatus:
-      type: object
-      description: Response body for liveness and readiness probes.
-      properties:
-        status:
-          type: string
-          enum:
-            - ok
-            - degraded
-          description: |
-            ok — all checks passed. degraded — one or more dependency checks failed;
-            used only on the readiness probe when the service should be taken out of rotation.
-        checks:
-          type: object
-          description: |
-            Map of dependency name to its check result. Present on the readiness probe;
-            omitted on the liveness probe (which has no dependency checks).
-          additionalProperties:
-            type: string
-            enum:
-              - ok
-              - fail
-      required:
-        - status
+      $ref: './components/schemas/health.yaml#/HealthStatus'
