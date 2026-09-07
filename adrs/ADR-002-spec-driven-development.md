@@ -48,7 +48,7 @@ MotifPath adopts **Spec-Driven Development (SDD)** with a dedicated spec reposit
 - `/openapi` — REST API specs (OpenAPI 3.1 YAML), validated by Redocly CLI
 - `/events` — Domain event schemas (JSON Schema), one file per event
 - `/features` — Business rule specs (Gherkin `.feature` files), executed via godog
-- `/adr` — Architecture Decision Records (this file)
+- `/adrs` — Architecture Decision Records (this file)
 - `/prompts` — Versioned AI task prompts with semantic versioning
 - `/evals` — Golden sets for PromptFoo prompt evaluation
 

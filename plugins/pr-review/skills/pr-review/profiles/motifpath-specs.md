@@ -30,7 +30,7 @@
 | OpenAPI: `operationId` camelCase verb+noun; all properties snake_case with a `description`; min responses 200/400/401; enums for status fields, never free strings; breaking = major, new endpoint = minor, correction = patch | `motifpath-specs/CLAUDE.md` — OpenAPI Standards |
 | Schema/property descriptions must be self-sufficient — never reference an ADR by name inside them; the rationale belongs in the ADR | `motifpath-specs/CLAUDE.md` — OpenAPI Standards |
 | Every event requires `event_type`, `student_id`, `session_id`, `occurred_at`; no optional field added without a Gherkin scenario exercising it; event schemas are validated as part of OpenAPI lint via `$ref`, not as standalone JSON Schema files | `motifpath-specs/CLAUDE.md` — Event Schema Standards |
-| ADR file naming `/adr/NNN-short-kebab-title.md`; required sections `## Context`, `## Decision`, `## Consequences`; never deleted, only superseded with a note | `motifpath-specs/CLAUDE.md` — ADR Format |
+| ADRs live in `adrs/ADR-NNN-short-kebab-title.md`; carry a Status line plus `## Context`, `## Decision`, `## Consequences` (and `## Rationale` for non-trivial decisions); the `adr-writer` skill is the authoring source of truth; never deleted, only superseded with a note | `motifpath-specs/CLAUDE.md` — ADR Format |
 | Prompt file changes always bump the version field and update the prompt's own CHANGELOG.md; PromptFoo eval must run | `motifpath-specs/CLAUDE.md` — Prompt Files |
 | Skill changes always bump the version field (or `plugin.json` version, post-marketplace-migration) and add a CHANGELOG.md entry; never delete a skill, deprecate it instead | `motifpath-specs/CLAUDE.md` — Skills |
 

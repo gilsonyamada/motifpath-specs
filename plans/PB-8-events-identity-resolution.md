@@ -153,9 +153,9 @@ that the intended state again.
 
 ## Related
 
-- **ADR:** [ADR-014](../adr/ADR-014-events-identity-resolution.md); amends
-  [ADR-007](../adr/ADR-007-auth-clerk-jwt.md); reuses the mechanism from
-  [ADR-013](../adr/ADR-013-admin-role-authorization-source.md).
+- **ADR:** [ADR-014](../adrs/ADR-014-events-identity-resolution.md); amends
+  [ADR-007](../adrs/ADR-007-auth-clerk-jwt.md); reuses the mechanism from
+  [ADR-013](../adrs/ADR-013-admin-role-authorization-source.md).
 - **Spec files:** `openapi/event-ingestion-service.yaml`,
   `features/event-ingestion/ingest-tracking-event.feature`
 - **Backlog item:** PB-8

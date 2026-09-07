@@ -1,6 +1,6 @@
 ---
 name: pr-review
-version: 1.0.0
+version: 1.2.0
 description: >
   Review a proposed pull request against MotifPath conventions and the intent behind the change,
   across any of the four MotifPath repos (motifpath-core, motifpath-web, motifpath-infra,
@@ -63,7 +63,7 @@ doesn't link it.
 ## Phase 2: Build the activity context
 
 1. Read the intent from the sources the profile declares (usually `motifpath-specs/openapi/`,
-   `motifpath-specs/features/`, or `motifpath-specs/adr/`).
+   `motifpath-specs/features/`, or `motifpath-specs/adrs/`).
 2. Read the PR's own description and cross-check it against the diff (see item 21).
 3. **No known intent → no adherence review.** Ask the user what the change should resolve and
    proceed with technical analysis only, stating that limitation up front.
