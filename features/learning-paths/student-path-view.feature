@@ -6,14 +6,14 @@ Feature: Student path view
   Background:
     Given the Core Domain Service is operational and ready to accept requests
     And content nodes "node-01", "node-02", "node-03" exist in the system
-    And a learning path "week-1-path" exists with items "node-01", "node-02", "node-03"
+    And a learning path "beginner-guitar-path" exists with items "node-01", "node-02", "node-03"
     And student "alice" is registered in the system
 
   # ── Happy path ─────────────────────────────────────────────────────────────
 
   Scenario: A student with a fresh assignment sees all items as not_started except the first
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned with no progress recorded
+    And "alice" has "beginner-guitar-path" assigned with no progress recorded
     When "alice" retrieves her current path
     Then the response contains all three items in order
     And "node-01" has status "not_started"
@@ -23,7 +23,7 @@ Feature: Student path view
 
   Scenario: A student who has completed the first node sees it as completed and the second as not_started
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned
+    And "alice" has "beginner-guitar-path" assigned
     And "alice" has completed "node-01"
     When "alice" retrieves her current path
     Then "node-01" has status "completed"
@@ -33,7 +33,7 @@ Feature: Student path view
 
   Scenario: A student who has started but not finished the second node sees it as in_progress
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned
+    And "alice" has "beginner-guitar-path" assigned
     And "alice" has completed "node-01"
     And "alice" has started but not completed "node-02"
     When "alice" retrieves her current path
@@ -44,7 +44,7 @@ Feature: Student path view
 
   Scenario: A student who has completed all nodes sees the full path as completed
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned
+    And "alice" has "beginner-guitar-path" assigned
     And "alice" has completed "node-01", "node-02", and "node-03"
     When "alice" retrieves her current path
     Then all three items have status "completed"
@@ -52,7 +52,7 @@ Feature: Student path view
 
   Scenario: The path view includes each item's title and content type
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned
+    And "alice" has "beginner-guitar-path" assigned
     When "alice" retrieves her current path
     Then each item in the response includes a title and content_type
 
@@ -60,7 +60,7 @@ Feature: Student path view
 
   Scenario: The path view has no section labels when the path defines none
     Given "alice" is authenticated as a student
-    And "alice" has "week-1-path" assigned
+    And "alice" has "beginner-guitar-path" assigned
     When "alice" retrieves her current path
     Then none of the items have a section_label
 

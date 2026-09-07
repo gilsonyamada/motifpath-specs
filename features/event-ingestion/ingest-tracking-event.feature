@@ -22,7 +22,7 @@ Feature: Ingest student tracking events
 
   Scenario: Student submits an exercise.answer_sent event from a challenge sequence
     Given student "alice" is authenticated with a valid session
-    And "alice" has an active exercise attempt for exercise "chord-recognition-01" triggered by challenge "week-1-assessment"
+    And "alice" has an active exercise attempt for exercise "chord-recognition-01" triggered by challenge "open-chords-assessment"
     When "alice" submits an answer to the exercise as attempt number 1
     Then the event is accepted and stored in the event log
     And the server returns the submitted event identifier and a receipt timestamp

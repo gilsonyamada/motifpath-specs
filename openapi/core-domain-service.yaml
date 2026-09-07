@@ -595,7 +595,7 @@ paths:
               beginner_guitar_path:
                 summary: A three-node beginner path
                 value:
-                  title: "Beginner Guitar — Week 1"
+                  title: "Beginner Guitar"
                   items:
                     - content_node_id: "c9d1e2f3-0000-0000-0000-000000000001"
                     - content_node_id: "c9d1e2f3-0000-0000-0000-000000000002"
