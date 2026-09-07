@@ -12,7 +12,7 @@ No feature is ready for implementation until its spec exists in this repository.
 |---|---|
 | `/openapi` | REST API specs (OpenAPI 3.1 YAML), including domain event schemas at `openapi/components/schemas/events.yaml` |
 | `/features` | Business rule specs (Gherkin `.feature` files, nested per domain) |
-| `/adr` | Architecture Decision Records |
+| `/adrs` | Architecture Decision Records |
 | `/prompts` | Versioned AI task prompts |
 | `/evals` | Golden sets for PromptFoo evaluation |
 | `/plugins` | Claude Code skills for the whole team, distributed as a plugin marketplace |

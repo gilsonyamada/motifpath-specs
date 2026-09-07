@@ -1,5 +1,19 @@
 # PR Review — Changelog
 
+## [1.2.0] — 2026-09-07
+
+### Changed
+- Updated every reference to the ADR directory from `motifpath-specs/adr/` to
+  `motifpath-specs/adrs/` (SKILL.md Phase 2, `motifpath-infra` and `_TEMPLATE`
+  profiles), and rewrote the `motifpath-specs` profile's ADR-format row to match
+  the reconciled `CLAUDE.md` (location `adrs/ADR-NNN-...`, Status line + Context/
+  Decision/Consequences/Rationale, `adr-writer` skill as the authoring source of
+  truth). `adr/ADR-001`–`014` were physically moved into `adrs/` alongside
+  ADR-015; the split directory and the stale `CLAUDE.md` rule were the
+  inconsistency.
+- Bumped `SKILL.md` `version` to 1.2.0 to match `plugin.json` (it had been left
+  at 1.0.0 when the plugin moved to 1.1.0).
+
 ## [1.1.0] — 2026-08-25
 
 ### Changed

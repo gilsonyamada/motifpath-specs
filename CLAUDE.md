@@ -9,7 +9,7 @@ Changes here propagate to all consuming repositories before any implementation b
 /openapi      → REST API specs (OpenAPI 3.1 YAML), event schemas at
                 openapi/components/schemas/events.yaml
 /features     → Business rule specs (Gherkin .feature files, nested per domain)
-/adr          → Architecture Decision Records
+/adrs         → Architecture Decision Records
 /prompts      → Versioned AI task prompts
 /evals        → Golden sets for PromptFoo evaluation
 /plugins      → Claude Code skills for the whole team (plugin marketplace)
@@ -56,8 +56,13 @@ Run `promptfoo eval` after any prompt change — CI enforces this as a required 
 Model assignments are fixed — do not change models without an ADR.
 
 ## ADR Format
-File naming: /adr/NNN-short-kebab-title.md
-Required sections: ## Context, ## Decision, ## Consequences
+Location and file naming: `/adrs/ADR-NNN-short-kebab-title.md` (zero-padded three-digit
+number; the `short-kebab-title` names the decision, not the problem).
+The full template, quality criteria, and status lifecycle live in the `adr-writer`
+skill — that skill is the source of truth for authoring ADRs. At minimum every ADR
+carries a Status line and `## Context`, `## Decision`, `## Consequences` sections;
+`## Rationale` (naming at least one rejected alternative) is expected for any
+non-trivial decision.
 NEVER delete an ADR. Superseded decisions get a note: "Superseded by ADR-NNN".
 
 ## CI Checks (must pass before merge)

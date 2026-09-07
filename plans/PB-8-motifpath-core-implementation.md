@@ -168,7 +168,7 @@ implemented against real data instead of a mocked port.
 **Branch:** `adr/PB-8/011-minimal-aggregation-worker` (spec), then `feat/PB-8/aggregation-worker` (code)
 
 #### 4.0.1 — Spec (motifpath-specs)
-- [x] Write `adr/ADR-011-minimal-aggregation-worker.md`, amending ADR-006's consumer-group table
+- [x] Write `adrs/ADR-011-minimal-aggregation-worker.md`, amending ADR-006's consumer-group table
   with the `aggregation-worker` row's concrete write shape (Accepted 2026-08-26, PR #11 merged):
   - MongoDB `aggregates` document shape: `{ student_id, content_node_id, status, updated_at }`
   - Status transition rule: `lesson.started`/`lesson.resumed` → `in_progress` unless already

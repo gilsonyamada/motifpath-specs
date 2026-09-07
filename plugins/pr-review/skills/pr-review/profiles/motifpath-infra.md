@@ -10,7 +10,7 @@
 
 ## Sources of intent
 
-- ADRs in `motifpath-specs/adr/` for any architectural infra decision.
+- ADRs in `motifpath-specs/adrs/` for any architectural infra decision.
 - Backlog item: task code in the branch name (`feat/MTP-NNN/...` or `infra/MTP-NNN/...`), per the
   `git` skill.
 - Fallback: ask the user for the activity's context.

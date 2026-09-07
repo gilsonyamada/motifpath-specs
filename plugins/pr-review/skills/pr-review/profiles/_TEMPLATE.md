@@ -18,7 +18,7 @@
 
 Where "what should this change resolve" comes from, and how to get there:
 
-- Spec: `motifpath-specs/openapi/`, `motifpath-specs/features/*.feature`, or `motifpath-specs/adr/`
+- Spec: `motifpath-specs/openapi/`, `motifpath-specs/features/*.feature`, or `motifpath-specs/adrs/`
 - Ticket / backlog item: <task-code format, where it's tracked>
 - Fallback: ask the user for the activity's context.
 

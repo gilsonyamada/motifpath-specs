@@ -145,8 +145,8 @@ the JWT-claim check; ADR-013 would then need a superseding ADR to record the rev
 
 ## Related
 
-- **ADR:** [ADR-013](../adr/ADR-013-admin-role-authorization-source.md); supersedes the deferral in
-  [ADR-012](../adr/ADR-012-idempotency-delivery-strategy.md) Part 3.
+- **ADR:** [ADR-013](../adrs/ADR-013-admin-role-authorization-source.md); supersedes the deferral in
+  [ADR-012](../adrs/ADR-012-idempotency-delivery-strategy.md) Part 3.
 - **Spec files:** `openapi/event-ingestion-service.yaml`,
   `features/event-ingestion/publish-outbox-remediation.feature`
 - **Backlog item:** PB-8
