@@ -140,6 +140,36 @@ This ADR **refines ADR-004's** one-line local-environment description ("local
 (Docker Compose + k3d)") to: *dependencies in Docker Compose; services via
 process-compose; k3d deferred together with the EKS deployment path.*
 
+### 7. Forward compatibility — browser end-to-end tests
+
+Browser E2E (Playwright or equivalent) is out of MVP scope per the
+`motifpath-web` testing policy (component tests via Vitest only). This ADR does
+not add it, and this section records that the door stays open: the pieces an E2E
+harness needs are the pieces this ADR introduces.
+
+A future E2E suite plugs into, without changing any decision above:
+
+- the **`full-stack` profile** (§2) for a local run, or **`compose.images.yaml`**
+  (§3) for a CI run — the running stack under test, at fixed ports;
+- **`/readyz` on every service** (§4) — the readiness gate an E2E runner's
+  start-up step (`docker compose up --wait`, a Playwright `webServer` block)
+  waits on before the first test;
+- the **environment-variable contract** (§5), which already carries
+  `CLERK_SECRET_KEY` and `VITE_CLERK_PUBLISHABLE_KEY` — an E2E job supplies a
+  Clerk *test-instance* key via a CI secret. The image-smoke job's dummy key
+  (§3) is a property of that job, not a platform limit.
+
+What E2E adds when the trigger fires — all additive, none in tension with this
+ADR: the Playwright dependency and CI browser; a state-seeding mechanism (API
+calls or SQL fixtures for test users and learning-path data); and serving the
+SPA for the run via `npm run build && npm run preview` (static, SPA-fallback
+aware — matches CloudFront) rather than the `npm run dev` HMR server used for
+iteration.
+
+**Trigger to revisit:** the first regression that ships which a component test
+could not structurally have caught (guard × store × router × real API), or the
+point at which the manual student-journey smoke becomes a per-release time cost.
+
 ## Rationale
 
 **process-compose over docker-compose for the services.** The inner loop is the
@@ -224,9 +254,11 @@ fails loudly if the image needs a variable that is not wired, which catches drif
 - ECR image-retention (a lifecycle policy to expire untagged / old images from
   the eventual dev-merge build) is a related but separate concern, noted here and
   tracked with PB-8a / the deployment pipeline work.
-- The `motifpath-specs` ADR directory inconsistency (`adr/` holds ADR-001–014,
-  `adrs/` holds ADR-015 and this file) is noted; consolidating is out of scope
-  for this ADR.
+- Browser E2E stays out of scope (§7). This ADR is the substrate a later E2E
+  effort builds on rather than a step toward it.
+- The `motifpath-specs` ADR directory inconsistency (`adr/` held ADR-001–014,
+  `adrs/` held ADR-015 and this file) is being resolved in a separate follow-up
+  PR that moves everything into `adrs/`.
 
 ## Related ADRs
 

@@ -35,6 +35,10 @@ endpoints that ADR-016 identified as a shared prerequisite.
 - A production-shaped full-stack `docker-compose.yml` running the services —
   deferred to PB-8a per ADR-016 §6.
 - k3d / Tilt / Skaffold — deferred with the EKS path per ADR-016 §6.
+- Browser E2E tests (Playwright/etc.) — out of MVP scope; ADR-016 §7 records the
+  seam a future suite plugs into (`full-stack` profile / `compose.images.yaml`,
+  `/readyz` gate, `CLERK_SECRET_KEY` in the §5 contract) and what it adds
+  (Playwright, state seeding, `build && preview` over `dev`).
 - Web containerization — it ships as static assets (ADR-004).
 - ECR image-retention lifecycle policy — noted in ADR-016, tracked with PB-8a.
 - `aggregation-worker` readiness reflecting Kafka **consumer-group membership** —
