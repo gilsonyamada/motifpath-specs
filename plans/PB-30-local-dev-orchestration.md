@@ -3,7 +3,7 @@
 **Task:** PB-30
 **Date:** 2026-09-07
 **Author:** Gilson Yamada
-**Status:** Draft
+**Status:** Ready
 
 ---
 
@@ -46,7 +46,7 @@ endpoints that ADR-016 identified as a shared prerequisite.
 
 ## Prerequisites
 
-- [ ] ADR-016 reviewed and set to Accepted.
+- [x] ADR-016 reviewed and set to Accepted (2026-09-07).
 - [ ] Devbox `devbox.json` already provides `go`, `atlas`, `nodejs` — confirm
       `process-compose` resolves via `devbox services` (bundled) and add `wgo` to
       `devbox.json` packages.
@@ -89,7 +89,7 @@ endpoints that ADR-016 identified as a shared prerequisite.
 - [ ] `/healthz` + `/readyz` defined in `core-domain-service.yaml`, referencing
       the shared `HealthStatus` schema.
 - [ ] Gherkin: 2 happy + 3 edge + 1 failure (meets "happy + 2 edge + 1 failure").
-- [ ] ADR-016 Accepted.
+- [x] ADR-016 Accepted (2026-09-07).
 
 ---
 

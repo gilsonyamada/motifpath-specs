@@ -1,6 +1,6 @@
 # ADR-016: Local Dev Orchestration via process-compose; Release-Image Smoke in CI
 
-**Status:** Proposed
+**Status:** Accepted — 2026-09-07
 **Date:** 2026-09-07
 **Deciders:** Gilson Yamada (solo engineering at MVP)
 
@@ -257,8 +257,8 @@ fails loudly if the image needs a variable that is not wired, which catches drif
 - Browser E2E stays out of scope (§7). This ADR is the substrate a later E2E
   effort builds on rather than a step toward it.
 - The `motifpath-specs` ADR directory inconsistency (`adr/` held ADR-001–014,
-  `adrs/` held ADR-015 and this file) is being resolved in a separate follow-up
-  PR that moves everything into `adrs/`.
+  `adrs/` held ADR-015 and this file) was resolved by PR #29, which moved
+  ADR-001–014 into `adrs/` and reconciled `CLAUDE.md`.
 
 ## Related ADRs
 
