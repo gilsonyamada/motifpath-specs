@@ -59,20 +59,21 @@ endpoints that ADR-016 identified as a shared prerequisite.
 
 ### Phase 1 — Spec (motifpath-specs)
 
-**Branch:** `feat/PB-30/adr-016-local-dev-orchestration` (this branch)
+**Branch:** `feat/PB-30/adr-016-local-dev-orchestration` (ADR + plan);
+`spec/PB-30/core-domain-health-endpoints` (Steps 2–4)
 
-- [ ] Step 1: Commit `adrs/ADR-016-local-dev-orchestration-and-image-smoke.md`
-      and this plan.
-- [ ] Step 2: In `openapi/core-domain-service.yaml`, add `/healthz`
+- [x] Step 1: Commit `adrs/ADR-016-local-dev-orchestration-and-image-smoke.md`
+      and this plan. (motifpath-specs#28)
+- [x] Step 2: In `openapi/core-domain-service.yaml`, add `/healthz`
       (`operationId: livenessCheck`) and `/readyz` (`operationId: readinessCheck`,
       200 + 503), `security: []`, `tags: [Operations]` — copy the shape verbatim
-      from `openapi/event-ingestion-service.yaml`.
-- [ ] Step 3: Extract the `HealthStatus` schema from `event-ingestion-service.yaml`
+      from `openapi/event-ingestion-service.yaml`. Version bumped 0.4.0 → 0.5.0.
+- [x] Step 3: Extract the `HealthStatus` schema from `event-ingestion-service.yaml`
       into `openapi/components/schemas/health.yaml` and `$ref` it from **both**
       service documents (Q1 resolved — shared file, matching how `events.yaml`
-      schemas are already shared). Confirm `@redocly/cli bundle` resolves the
-      cross-file `$ref` at `make generate` time in `motifpath-core`.
-- [ ] Step 4: Write `features/core-domain/service-health.feature` — domain
+      schemas are already shared). `@redocly/cli bundle` resolves the cross-file
+      `$ref` for `core-domain-service.yaml` (verified locally).
+- [x] Step 4: Write `features/core-domain/service-health.feature` — domain
       language only, no status codes (per specs CLAUDE.md):
   - the liveness probe reports the service is running (happy)
   - the readiness probe reports ready when the learning-graph store and the
@@ -86,9 +87,9 @@ endpoints that ADR-016 identified as a shared prerequisite.
 
 **Definition of Ready check:**
 
-- [ ] `/healthz` + `/readyz` defined in `core-domain-service.yaml`, referencing
+- [x] `/healthz` + `/readyz` defined in `core-domain-service.yaml`, referencing
       the shared `HealthStatus` schema.
-- [ ] Gherkin: 2 happy + 3 edge + 1 failure (meets "happy + 2 edge + 1 failure").
+- [x] Gherkin: 2 happy + 3 edge + 1 failure (meets "happy + 2 edge + 1 failure").
 - [x] ADR-016 Accepted (2026-09-07).
 
 ---
