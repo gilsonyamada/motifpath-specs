@@ -3,7 +3,43 @@
 **Task:** PB-30
 **Date:** 2026-09-07
 **Author:** Gilson Yamada
-**Status:** Ready
+**Status:** In progress — Phases 1–6 implemented; Phase 7 is empty by design
+
+---
+
+## Implementation status (2026-09-07)
+
+| Phase | PR | State | As-built notes |
+|---|---|---|---|
+| 1 — spec | motifpath-specs #28 (ADR + plan), #30 (OpenAPI + Gherkin) | Merged | — |
+| 2 — core-domain health | motifpath-core #13 | Merged | matched the plan; `cmd/main.go` opens Postgres via `entsql.OpenDB` (not `ent.Open`) to share the `*sql.DB` with `PostgresPinger`; check keys `learning_graph` / `completion_state` |
+| 3 — aggregation-worker health | motifpath-core #14 | Merged | `KafkaEventConsumer.Ping` + `MongoCompletionStateRepository.Ping` already existed; new `internal/adapters/health` HTTP server wires them in; check keys `mongodb` / `kafka_broker` |
+| 4 + 5 — orchestration files + image-smoke CI | motifpath-core #15 | Open | see divergences below |
+| 6 — web docs | motifpath-web #8 | Open | — |
+| 7 — infra | — | N/A | deferred to PB-8a (ADR-016 §6) |
+
+**Phase 4 / 5 divergences from the plan text** (validated end to end against real
+containers — `devbox services up … web` runs the PB-8c smoke green; `docker
+compose -f compose.images.yaml up --build --wait` exits 0):
+
+- **process-compose has no "profiles" in any version** (that is docker-compose).
+  The "full-stack profile" became `disabled: true` on `aggregation-worker` and
+  `web`; `devbox services up <names>` starts a disabled process. Bare `devbox
+  services up` = `core-domain` + `event-ingestion`.
+- **Per-process env is loaded via `command: sh -c 'set -a && . ./.env && exec wgo
+  run ./cmd'`**, not an `env_files` key — that key does not exist in older
+  process-compose and its name varies across versions.
+- **Dependency gates match `(healthy)` in `docker compose ps` text**, not an
+  `exec` probe running `pg_isready` / `mongosh` / `rpk` (those tools are not in
+  the devbox env) and not `docker inspect --format '{{…}}'` (process-compose
+  expands `{{ }}` in commands itself → `<no value>`).
+- **`compose.images.yaml` app services carry no container healthcheck** — the
+  images are debian-slim / distroless with no `curl` or shell TCP. `--wait`
+  gates on "running"; the CI job curls the endpoints from the host.
+- **Two long-broken release images fixed** (motifpath-core #15, commit `5ef90b5`):
+  `event-ingestion/Dockerfile` was missing the `aggregation-worker/go.mod` COPY;
+  `core-domain/Dockerfile` never copied the Atlas migrations tree into the
+  runtime image. Neither had ever been built — exactly the gap ADR-016 closes.
 
 ---
 
@@ -96,7 +132,8 @@ endpoints that ADR-016 identified as a shared prerequisite.
 
 ### Phase 2 — core-domain health endpoints (motifpath-core)
 
-**Branch:** `feat/PB-30/core-domain-health-endpoints`
+**Branch:** `feat/PB-30/core-domain-health-endpoints` — **Done (motifpath-core #13).**
+Steps below are the original plan; all landed as written.
 
 - [ ] Step 1: `make generate` — regenerate `internal/adapters/http/generated/`
       from the updated bundled spec. Confirm `LivenessCheck` / `ReadinessCheck`
@@ -127,7 +164,8 @@ endpoints that ADR-016 identified as a shared prerequisite.
 
 ### Phase 3 — aggregation-worker health server (motifpath-core)
 
-**Branch:** `feat/PB-30/aggregation-worker-health-server`
+**Branch:** `feat/PB-30/aggregation-worker-health-server` — **Done (motifpath-core #14).**
+Steps below are the original plan; all landed as written.
 
 - [ ] Step 1 (test first): table-driven tests for a small
       `internal/adapters/health` HTTP server — `/healthz` → 200; `/readyz` → 200
@@ -152,7 +190,9 @@ on group membership").
 
 ### Phase 4 — Local orchestration files (motifpath-core)
 
-**Branch:** `feat/PB-30/local-orchestration`
+**Branch:** `feat/PB-30/local-orchestration` — **Done (motifpath-core #15).**
+Steps below are the original plan; see "Phase 4 / 5 divergences" in the status
+section above for where the implementation differs.
 
 - [ ] Step 1: add `wgo` to `devbox.json` `packages`.
 - [ ] Step 2: `services/core-domain/.env.example`,
@@ -193,7 +233,10 @@ on group membership").
 
 ### Phase 5 — Image-smoke CI job (motifpath-core)
 
-**Branch:** `feat/PB-30/ci-image-smoke` (may combine with Phase 4)
+**Branch:** combined into `feat/PB-30/local-orchestration` — **Done (motifpath-core #15).**
+`changes` (dorny/paths-filter) → `image-smoke` job; `all-checks` gates on it with
+`if: always()` accepting `skipped`. GHA layer cache not wired yet (public-repo
+minutes are unmetered). Steps below are the original plan.
 
 - [ ] Step 1: add job `image-smoke` to `.github/workflows/ci.yml`:
   - `on` path filter (via `dorny/paths-filter` or a job-level `if` on
@@ -218,7 +261,10 @@ on group membership").
 
 ### Phase 6 — Frontend (motifpath-web)
 
-**Branch:** `feat/PB-30/web-dev-env-doc`
+**Branch:** `docs/PB-30/web-local-dev-orchestration` — **Done (motifpath-web #8).**
+Also spelled out the `pk_test_` (web) vs `sk_test_` (core-domain `CLERK_SECRET_KEY`)
+distinction in `.env.example` and the PB-8c smoke steps — swapping them 401s every
+authenticated call.
 
 - [ ] Step 1: confirm `.env.example` keys match ADR-016 (`VITE_CLERK_PUBLISHABLE_KEY`,
       `VITE_CORE_API_URL`, `VITE_EVENTS_API_URL`) — already present.
@@ -250,23 +296,24 @@ All changes are additive and non-stateful:
 
 ## Validation
 
-- [ ] `make dev && devbox services up` → `core-domain` and `event-ingestion`
-      reach `process_healthy`; `curl -fsS localhost:8080/readyz` and
-      `localhost:8081/readyz` return 200 with `{"status":"ok","checks":{...}}`.
-- [ ] `devbox services up` with the `full-stack` profile additionally starts
-      `aggregation-worker` (`localhost:8082/healthz` 200) and `web`
-      (`localhost:5173` serves the SPA).
+- [x] `make dev && devbox services up` → `core-domain` and `event-ingestion`
+      reach Ready; `curl localhost:8080/readyz` and `localhost:8081/readyz`
+      return 200 with `{"status":"ok","checks":{...}}`.
+- [x] `devbox services up core-domain event-ingestion aggregation-worker web`
+      additionally starts `aggregation-worker` (`localhost:8082/readyz` 200) and
+      `web` (`localhost:5173` serves the SPA).
 - [ ] Stop the Postgres container → `core-domain` `/readyz` returns 503 naming
-      the failed store in its `checks` map; restart → back to 200.
-- [ ] `docker compose -f compose.images.yaml up --wait` exits 0 locally; all
-      three `/healthz` return 200; an authenticated route with no token returns
-      401 (proves routing + middleware, not just the health path).
-- [ ] CI: a PR touching `services/core-domain/Dockerfile` runs `image-smoke` and
-      it passes; a docs-only PR does not run it (or no-ops in <10s).
-- [ ] The PB-8c manual onboarding smoke (web README) is completed end to end
-      using `devbox services up` instead of hand-run terminals.
-- [ ] `make lint`, `make test`, `make test:bdd`, `make test:int` all green in
-      `motifpath-core`; `npm run lint && npm run test` green in `motifpath-web`.
+      the failed store in its `checks` map; restart → back to 200. *(handler
+      unit + BDD cover this; not re-run against the live stack)*
+- [x] `docker compose -f compose.images.yaml up --build --wait` exits 0 locally;
+      all three `/healthz` + `/readyz` return 200; `GET /users/me` with no token
+      returns 401.
+- [ ] CI: a PR touching a `Dockerfile` runs `image-smoke` and it passes; a
+      docs-only PR does not run it. *(pending — first run is motifpath-core #15)*
+- [x] The PB-8c manual onboarding smoke is completed end to end using
+      `devbox services up … web` instead of hand-run terminals.
+- [x] `make lint`, `make test`, `make test:bdd`, `make test:int` all green in
+      `motifpath-core`. *(motifpath-web unaffected — Phase 6 is docs only)*
 
 ---
 
