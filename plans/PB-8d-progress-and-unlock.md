@@ -3,7 +3,7 @@
 **Task:** PB-8d
 **Date:** 2026-09-07
 **Author:** Gilson
-**Status:** Draft
+**Status:** Ready — open questions resolved 2026-09-07; blocked only on motifpath-web#7 merging first
 
 ---
 
@@ -18,26 +18,42 @@ motifpath-web#7).
 ## Scope
 
 **In scope (`motifpath-web` only):**
-- Replace the raw `{{ step.status }}` text that motifpath-web#7 puts in each step `<li>` with a
-  status treatment: a completed marker, an emphasised current step, and a dimmed
-  non-interactive locked step — per `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path"
+- A new `PathStep.vue` component (`features/student/components/`) — one path step: ordinal,
+  status marker, title, status label, and an optional open/review affordance. Replaces the raw
+  `{{ step.status }}` text and inline `<li>` that motifpath-web#7 puts in `PathView`.
+- Status treatment per `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path": a
+  completed marker, an emphasised current step, a dimmed non-interactive locked step
 - Derive the current step from `StudentPathView.current_position` as the single source of truth,
   not by re-scanning per-item `status`
-- An **Open** affordance on the current step (destination — see Open Questions)
-- A pure per-step view helper + a progress summary helper (`{ completed, total }`)
-- A progress summary line, in the PB-8j copy voice — no time-box language
-- Add the `motif-success` token to `tailwind.config.ts` (the PB-8j §"Semantic token roles"
-  action item; this is its first consumer)
-- Component tests for each status rendering, the current-step affordance, locked
-  non-interactivity, and the progress summary
+- An affordance on the current step **and** on completed steps (a completed lesson is
+  revisitable): `Open` for the current step, `Review` for a completed one. Locked steps have no
+  affordance. It links to the `node` named route (below).
+- A minimal `NodeView.vue` + `node` route (`/path/nodes/:nodeId`) as a placeholder seam — a
+  holding screen ("This lesson isn't available yet"). PB-8e replaces its body with the real S6.
+- A pure per-step view helper + a progress helper (`{ completed, total }`) in
+  `features/student/utils/`
+- A single quiet **overall progress line** at the path head — "N of M steps complete" — kept
+  alongside #7's per-section step counts. Plain, present tense, competency-framed; no time-box
+  language, no progress bar (see Design Decisions).
+- Add the `motif-success` **and** `motif-danger` tokens to `tailwind.config.ts` — the PB-8j
+  §"Semantic token roles" action item; `motif-success` is used here, `motif-danger` added in the
+  same commit for completeness
+- Component tests for each status rendering, the open/review affordances, locked
+  non-interactivity, and the progress line
 
 **Out of scope:**
-- The node / lesson screen S6 (`/path/nodes/:nodeId`) — PB-8e. This plan may add only a
-  placeholder route + view as a seam (see Open Questions).
+- The real S6 node / lesson screen (dynamic video layout, cues, mark-complete) — PB-8e. This
+  plan ships only the `NodeView` placeholder and the route.
 - Any change to how `status` or `current_position` are computed — that is backend, already
   implemented per ADR-011 and shipped in motifpath-core#9, and stays unchanged.
 - Section grouping — delivered by motifpath-web#7, a prerequisite here.
 - Marking a step complete or emitting `lesson.*` events — PB-8e.
+- The PB-8j standard-state components (`StateLoading`, `StateEmpty`, `StateError`,
+  `StateLocked`) — `PathView` keeps its current inline loading / no-path / `ErrorRetryNotice`
+  handling. Extracting those is a separate PB-8j foundation-cleanup item. `StateLocked` in
+  particular is a whole-screen state for S6 and belongs to PB-8e.
+- A shared primary-action button component — the affordance is a styled `RouterLink` inside
+  `PathStep`; a design-system button is a later decision.
 - Teacher-facing path authoring.
 - Any new endpoint or persisted state — this reads the existing `GET /students/me/path`.
 
@@ -53,6 +69,43 @@ motifpath-web#7).
       sectioned path) — accepted
 - [x] `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path", §"Standard states",
       §"Semantic token roles" — the design source of truth for this screen
+
+---
+
+## Component Inventory
+
+What this slice adds to `motifpath-web`, and what it deliberately does not.
+
+| Item | Kind | Location | Notes |
+|---|---|---|---|
+| `PathStep.vue` | component | `features/student/components/` | One step: ordinal · status marker (✓ / ▸ / 🔒) · title · status label · optional `Open`/`Review` affordance. All per-step branching lives here; `PathView` just maps over sections. Unit of the component tests. |
+| `NodeView.vue` | view | `features/student/views/` | Placeholder holding screen for the `node` route. ~20 lines: reads `:nodeId`, renders "This lesson isn't available yet" + a "‹ Back to path" link. PB-8e replaces the body. |
+| `node` route | router | `src/router/index.ts` | `/path/nodes/:nodeId`, name `node`, `meta.requiresAuth`, nested under `/path` (per PB-8j §route map). |
+| `pathProgress` / `stepView` | pure helper | `features/student/utils/` | Alongside `groupPathSections`. `stepView` → per-step `{ position, title, status, isCurrent }`; `pathProgress` → `{ completed, total }`. |
+| overall progress line | inline markup | `PathView.vue` | One text node — not worth a component. Extract to `PathProgressSummary.vue` only if it later grows a bar or per-section breakdown. |
+| `motif-success`, `motif-danger` | tokens | `tailwind.config.ts` | Placeholder hex + the existing `PLACEHOLDER` comment. |
+
+**Explicitly deferred (not this slice):** `StateLoading` / `StateEmpty` / `StateError` /
+`StateLocked` shared components and a shared primary-action button — a separate PB-8j
+foundation-cleanup item. `PathView` keeps its inline state handling for now.
+
+---
+
+## Design Decisions
+
+- **Overall progress line, not just per-section counts.** The S5 wireframe shows only
+  per-section "N steps" counts. This slice adds one quiet line at the path head —
+  "N of M steps complete" — because "how far am I overall" is the core signal of a
+  progress-&-unlock screen and per-section counts only answer it locally. It stays
+  competency-framed (steps, never time) and un-gamified (no bar, no XP, no streak) per the
+  PB-8j copy voice. **This is a deliberate divergence from the wireframe** — fold back into the
+  PB-8j canvas.
+- **No progress bar on S5.** A fill-only bar (as on S7 practice) gives a vaguer signal and more
+  visual weight; a concrete count reads as reassuring on a whole-journey screen. S7's bar is
+  deliberately count-less for a short, pressured run — the opposite context.
+- **Completed steps are revisitable.** The affordance shows for the current step (`Open`) and
+  for completed steps (`Review`), not just the current one — a student can re-watch a finished
+  lesson. Locked steps have no affordance.
 
 ---
 
@@ -94,41 +147,41 @@ token roles" action items — brand's call, not a blocker for a placeholder toke
 
 **Branch:** `feat/PB-8d/path-progress-and-unlock` (from `dev`, after motifpath-web#7 merges)
 
-- [ ] Step 1 — `chore(student)`, separate commit: add `motif-success` to `tailwind.config.ts`
-      with a placeholder hex and the same `PLACEHOLDER` comment the other `motif-*` tokens
-      carry, plus a note that the real value is a `motifpath-brand` decision. Add `motif-danger`
-      only if design wants both now (see Open Questions).
-- [ ] Step 2 — write failing unit tests (TDD) for a pure helper in
+- [ ] Step 1 — `chore(student)`, separate commit: add `motif-success` and `motif-danger` to
+      `tailwind.config.ts`, each with a placeholder hex and the same `PLACEHOLDER` comment the
+      other `motif-*` tokens carry, plus a note that the real values are a `motifpath-brand`
+      decision (PB-8j §"Semantic token roles").
+- [ ] Step 2 — write failing unit tests (TDD) for the pure helper in
       `src/features/student/utils/`: given a `StudentPathView`, produce per-step view data
       `{ position, title, status, isCurrent: position === current_position }` and a summary
       `{ completed, total }`. Cases: current is the first step; current is mid-path with earlier
       steps completed and later steps locked; path fully completed (`current_position === total`,
       nothing locked); single-step path.
 - [ ] Step 3 — implement the helper to make Step 2 pass.
-- [ ] Step 4 — write failing component tests (TDD) for `PathView`:
-  - a `completed` step renders the completed marker and label, no Open affordance
-  - the current step renders emphasised and shows the Open affordance
-  - a `locked` step renders dimmed (`motif-ink/40`), has a lock marker, and has **no** Open
-    affordance and `aria-disabled`
-  - the progress summary line reflects `completed` / `total`
-  - a fully completed path renders every step completed with no Open affordance anywhere
-  - an unlabelled path and a labelled path (from #7) both still render their sections correctly
-    — no regression
-- [ ] Step 5 — update `PathView` to make Step 4 pass: replace
-      `<span data-test="step-status">{{ step.status }}</span>` with the status treatment above,
-      keeping the ordinal + title from #7 unchanged. `data-test` hooks: keep `step-status`
-      (now carrying a stable status value), add `step-open`.
-- [ ] Step 6 — add the progress summary line at the path head, in the PB-8j copy voice
-      ("2 of 5 steps done" — plain, present tense, no "week" / "on track" / due dates). No
-      progress bar on S5 — the S5 wireframe shows per-section step counts and per-step markers,
-      not a global bar (confirm placement against the wireframe: one quiet line under the path
-      title, or the per-section "N steps" counts already in #7).
-- [ ] Step 7 — `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` all clean;
+- [ ] Step 4 — write failing component tests (TDD) for `PathStep.vue`:
+  - `completed` → completed marker, label, a **`Review`** affordance to the `node` route
+  - current (`isCurrent`) → emphasised, an **`Open`** affordance to the `node` route
+  - `locked` → dimmed (`motif-ink/40`), lock marker, `aria-disabled`, **no** affordance
+  - the affordance targets the `node` named route with the step's `content_node_id`
+- [ ] Step 5 — implement `PathStep.vue` to make Step 4 pass.
+- [ ] Step 6 — add the `node` route (`/path/nodes/:nodeId`, name `node`, `meta.requiresAuth`,
+      nested under `/path`) + a minimal `NodeView.vue` holding screen; a router test asserts the
+      route resolves and requires auth.
+- [ ] Step 7 — write failing component tests (TDD) for `PathView`:
+  - each section maps its items to `PathStep` (delegation, not re-implementation)
+  - the overall progress line reflects `completed` / `total`
+  - a fully completed path: every step `Review`, no `Open`, progress line reads "M of M"
+  - regression: an unlabelled path and a labelled path (from #7) still render their sections
+- [ ] Step 8 — update `PathView` to make Step 7 pass: replace the inline `<li>` body (from #7)
+      with `<PathStep>`, add the progress line at the path head via `pathProgress` — "N of M
+      steps complete", plain, present tense, no "week" / "on track" / due dates.
+- [ ] Step 9 — `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` all clean;
       manual check against the `process-compose` stack with a seeded 3-step assignment (node 1
-      completed): step 1 completed, step 2 current + Open, step 3 locked.
+      completed): step 1 `Review`, step 2 current + `Open` → `NodeView` placeholder, step 3
+      locked; progress line reads "1 of 3 steps complete".
 
-**Commit discipline:** the token change (Step 1) is its own `chore` commit, separate from the
-component logic (git skill — generated/config changes split from business logic).
+**Commit discipline:** the token change (Step 1) is its own `chore` commit, separate from
+component logic (git skill — config/generated changes split from business logic).
 
 ---
 
@@ -141,20 +194,23 @@ Not applicable — pure frontend rendering change, no new service, no infra.
 ## Rollback Plan
 
 Pure frontend change behind the existing `GET /students/me/path` endpoint. Reverting is a
-standard redeploy of the previous `motifpath-web` build per ADR-004. The `motif-success` token
-addition is additive and inert if unreferenced. No migration, no backend change, no infra
-change — nothing that cannot be rolled back by redeploy.
+standard redeploy of the previous `motifpath-web` build per ADR-004. The new tokens and the
+`node` placeholder route are additive and inert if unreferenced. No migration, no backend
+change, no infra change — nothing that cannot be rolled back by redeploy.
 
 ## Validation
 
-- [ ] Component tests assert: completed step → completed marker, no Open; current step →
-      emphasis + Open affordance; locked step → dimmed, `aria-disabled`, no Open
-- [ ] The progress summary reflects `current_position` / item count and contains no time-box
-      language (asserted in a test, not just by eye)
-- [ ] A fully completed path renders every step completed and shows no Open affordance
+- [ ] `PathStep` tests assert: completed → completed marker + `Review`; current → emphasis +
+      `Open`; locked → dimmed, `aria-disabled`, no affordance
+- [ ] The affordance navigates to the `node` route with the step's `content_node_id`; the
+      route requires auth
+- [ ] The overall progress line reflects `current_position` / item count and contains no
+      time-box language (asserted in a test, not just by eye)
+- [ ] A fully completed path renders every step with `Review`, no `Open`, progress line "M of M"
 - [ ] `npm run test` count grows by the new cases; `typecheck`, `lint`, `build` all clean
 - [ ] Manual against `process-compose`: a seeded 3-step assignment with node 1 completed shows
-      step 1 completed, step 2 current + Open, step 3 locked
+      step 1 `Review`, step 2 current + `Open` → `NodeView` placeholder, step 3 locked; progress
+      line "1 of 3 steps complete"
 - [ ] Regression: unlabelled and labelled paths from motifpath-web#7 still render their sections
       unchanged
 
@@ -162,12 +218,20 @@ change — nothing that cannot be rolled back by redeploy.
 
 ## Open Questions
 
+### Resolved 2026-09-07
+
+| Question | Resolution |
+|---|---|
+| Open affordance destination while S6 doesn't exist | **Option B** — PB-8d declares the `node` named route + a minimal `NodeView` placeholder; the affordance links to it. PB-8e replaces the view body. |
+| Global progress line vs. per-section counts only | Add a single quiet overall line ("N of M steps complete") **in addition to** #7's per-section counts. Deliberate divergence from the S5 wireframe — fold back into the PB-8j canvas. No progress bar. |
+| Do completed steps stay openable? | **Yes.** The affordance shows for completed steps as `Review` and for the current step as `Open`. Locked steps have none. |
+| Add `motif-danger` now or defer? | **Add now**, in the same `tailwind.config.ts` commit as `motif-success`. |
+
+### Still open
+
 | Question | Owner | Resolution |
 |---|---|---|
-| **Open affordance destination.** S6 (`/path/nodes/:nodeId`, route `node`) is PB-8e and does not exist yet. Options: **A** — current step gets emphasis + marker but no Open button until PB-8e; **B** — PB-8d declares the `node` named route + a minimal placeholder `NodeView` and Open links to it; **C** — Open is a disabled button with explanatory text. Recommendation: **B** — delivers a real "click your next step" end to end and gives PB-8e a defined integration seam, at ~20 lines of placeholder. | Gilson | — |
-| Global progress line vs. the per-section "N steps" counts already rendered by #7 — the S5 wireframe shows only the per-section counts and per-step markers, no global bar | Gilson / design | — |
-| Does a completed step stay openable (revisit the lesson)? The S5 wireframe shows no affordance on completed steps | Gilson | — |
-| Add `motif-danger` alongside `motif-success` now, or defer to its first real consumer | motifpath-web implementer | — |
+| `motif-success` / `motif-danger` hex values | `motifpath-brand` | Placeholder hex ships with this slice; real values tracked in PB-8j §"Semantic token roles" action items |
 
 ---
 
