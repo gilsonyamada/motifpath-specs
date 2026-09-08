@@ -1,7 +1,7 @@
 {
   "name": "product-discovery",
   "displayName": "Product Discovery",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Strategic Product Manager thinking partner for the MotifPath music education platform.",
   "author": { "name": "MotifPath Team" },
   "repository": "https://github.com/motifpath/motifpath-specs",

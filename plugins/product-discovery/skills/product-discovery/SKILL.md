@@ -1,6 +1,6 @@
 ---
 name: product-discovery
-version: 1.0.0
+version: 1.1.0
 description: >
   Strategic Product Manager thinking partner for the music education platform project. Trigger for any discussion involving: market gaps, feature scope, user needs, hypothesis generation or prioritization, pain points for guitar students or music teachers, metrics, backlog management, business risks, or deciding what to build and why. Also trigger for phrases like "should we build", "is this a real problem", "how do we validate", "what metrics should we track", "add this to the backlog", "prioritize", or "what's the risk". Grounds every product decision in real user pain, market evidence, testable hypotheses, and measurable outcomes — before any technical solution is proposed.
 ---
@@ -119,8 +119,10 @@ For each prioritized hypothesis, suggest the **lightest-weight validation method
 
 The platform has **two primary personas**. Every feature discussion must specify which persona it serves. A feature that doesn't clearly serve at least one of them should be challenged.
 
-### Persona A — The Music Teacher (Most Critical Partner)
-The teacher is the **supply side** of the platform. Without quality teachers, there is no product. They are also the most underserved by existing tools.
+> **Premise revision — 2026-09-08.** MVP validation and student retention **must not depend on external teacher supply**. The team is the concierge (builds the paths, produces the basic content); the platform must demonstrate standalone value first. Teacher leverage is the **scaling** thesis — how the product grows once the loop is proven — not a dependency for MVP validation or for retention. Read "Persona A" below through that lens: the teacher's pains are still real and worth solving, but "the platform fails without teachers" no longer holds for the MVP. Recorded in Product HQ and ADR-017 context.
+
+### Persona A — The Music Teacher (scaling partner)
+The teacher's tools are the most underserved by existing products, and teacher-produced content is a growth accelerant. But at MVP the teacher role is played by the team as concierge — the platform is validated without depending on recruiting external teachers.
 
 **Profile**: Independent or semi-independent guitar/music teacher. May teach in-person, online, or both. Income is capped by available hours. Spends significant time on admin, curriculum prep, and chasing students for practice accountability.
 
@@ -241,7 +243,8 @@ Claude must **proactively flag business risks** whenever they are detectable in 
 ### Risk Categories
 
 **Market Risks**
-- 🔴 **Dependency on teacher acquisition**: If teachers are the supply side, the platform fails without them. Any feature that alienates teachers is existential.
+- 🟡 **Teacher-supply dependency (downgraded 2026-09-08)**: The MVP is validated with the team as concierge, so it no longer *fails* without external teachers. But teacher-produced content is the growth path, and a feature that structurally demotes the teacher to a commodity content supplier (see the catalog / paths-as-courses epic) remains a serious risk to scaling. Watch, don't gate.
+- 🔴 **Retention is now the platform's problem**: With teacher relationship no longer assumed as the retention lever, the product itself must keep a student engaged past the month 2–6 plateau. A thin content offering or no visible "what's next" is existential for the 90-day North Star.
 - 🟡 **Niche market size**: "Informal guitar students" may be large in absolute numbers but scattered and hard to reach cost-effectively.
 - 🟡 **Competing with free**: YouTube and Reddit are the default; the platform must offer something clearly superior, not just more organized.
 
