@@ -96,20 +96,21 @@ foundation-cleanup item. `PathView` keeps its inline state handling for now.
 
 ### Multi-path readiness (per ADR-017)
 
-ADR-017 keeps the MVP single-active-path but requires the data model *and* the frontend
-structure to not preclude concurrent multi-path later. This slice's contribution to that,
-at zero extra cost:
+ADR-017 keeps the MVP single-current-path but models a student path as a copied `StudentPath`
+instance (a student has many) and requires the frontend structure not to preclude multi-path
+later. This slice's contribution to that, at zero extra cost:
 
 - **`PathView` (fetch + states) is split from `PathContent` (render a given path).** A future
   multi-path view is a path picker feeding the same `PathContent` — not a rewrite.
-- **Components key off `assignment_id`** (carried in `StudentPathView`), never "the student's
-  path" as a singleton. `PathContent` and `PathStep` receive their data as props.
+- **Components key off `student_path_id`** (carried in `StudentPathView` — renamed from
+  `assignment_id` by ADR-017), never "the student's path" as a singleton. `PathContent` and
+  `PathStep` receive their data as props.
 - **The `node` route stays node-keyed** (`/path/nodes/:nodeId`) and path-agnostic, so it needs
-  no change when a student has more than one active path.
-- **`useStudentPath` stays singular** ("the active assignment") — a future `useStudentPaths`
-  (list) is an addition, not a replacement. No speculative plural code now.
+  no change when a student has more than one path.
+- **`useStudentPath` stays singular** ("the current path") — a future `useStudentPaths` (list)
+  is an addition, not a replacement. No speculative plural code now.
 
-Not in scope: the plural read endpoint, a picker, or any multi-active behaviour — those wait
+Not in scope: the plural read endpoint, a picker, or any multi-path behaviour — those wait
 for the dedicated multi-path item.
 
 ---
@@ -264,7 +265,7 @@ change, no infra change — nothing that cannot be rolled back by redeploy.
 
 ## Related
 
-- **ADR:** [ADR-011 — Minimal Aggregation Worker for MVP node-completion state](../adrs/ADR-011-minimal-aggregation-worker.md); [ADR-015 — Challenge belongs to the path node; the student path is a self-contained sectioned sequence](../adrs/ADR-015-node-challenge-and-path-sections.md); [ADR-017 — Student path assignment lifecycle](../adrs/ADR-017-student-path-assignment-lifecycle.md) (governs the `PathView` / `PathContent` split)
+- **ADR:** [ADR-011 — Minimal Aggregation Worker for MVP node-completion state](../adrs/ADR-011-minimal-aggregation-worker.md); [ADR-015 — Challenge belongs to the path node; the student path is a self-contained sectioned sequence](../adrs/ADR-015-node-challenge-and-path-sections.md); [ADR-017 — Student path as a copied template instance](../adrs/ADR-017-student-path-copied-instance.md) (governs the `PathView` / `PathContent` split)
 - **Design:** `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path", §"Standard states", §"Semantic token roles"
 - **Spec files:** `openapi/core-domain-service.yaml` (`getStudentPath`), `features/learning-paths/student-path-view.feature`
 - **Backlog item:** PB-8d (Learning path view + progress & unlock)
