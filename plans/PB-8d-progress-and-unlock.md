@@ -67,6 +67,9 @@ motifpath-web#7).
       merged and godog-implemented (motifpath-core#9)
 - [x] ADR-011 (aggregation worker derives node-completion state) and ADR-015 (self-contained
       sectioned path) — accepted
+- [ ] ADR-017 (student path assignment lifecycle) — Proposed (specs PR #33). Does not block
+      Phase 3 coding, but its "multi-path readiness" section governs the `PathView` /
+      `PathContent` split below; land it first or in parallel.
 - [x] `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path", §"Standard states",
       §"Semantic token roles" — the design source of truth for this screen
 
@@ -78,16 +81,36 @@ What this slice adds to `motifpath-web`, and what it deliberately does not.
 
 | Item | Kind | Location | Notes |
 |---|---|---|---|
-| `PathStep.vue` | component | `features/student/components/` | One step: ordinal · status marker (✓ / ▸ / 🔒) · title · status label · optional `Open`/`Review` affordance. All per-step branching lives here; `PathView` just maps over sections. Unit of the component tests. |
+| `PathView.vue` | route component | `features/student/views/` | Owns the fetch (`useStudentPath`) and the loading / error / no-path states. Renders `<PathContent>` on success. Deliberately thin — see Multi-path readiness. |
+| `PathContent.vue` | component | `features/student/components/` | Props: one `StudentPathView`. Renders the progress line + the sections (`groupPathSections`) + a `PathStep` per item. Has **no** knowledge of fetching or of how many paths a student has. |
+| `PathStep.vue` | component | `features/student/components/` | One step: ordinal · status marker (✓ / ▸ / 🔒) · title · status label · optional `Open`/`Review` affordance. All per-step branching lives here. Unit of the component tests. |
 | `NodeView.vue` | view | `features/student/views/` | Placeholder holding screen for the `node` route. ~20 lines: reads `:nodeId`, renders "This lesson isn't available yet" + a "‹ Back to path" link. PB-8e replaces the body. |
-| `node` route | router | `src/router/index.ts` | `/path/nodes/:nodeId`, name `node`, `meta.requiresAuth`, nested under `/path` (per PB-8j §route map). |
-| `pathProgress` / `stepView` | pure helper | `features/student/utils/` | Alongside `groupPathSections`. `stepView` → per-step `{ position, title, status, isCurrent }`; `pathProgress` → `{ completed, total }`. |
-| overall progress line | inline markup | `PathView.vue` | One text node — not worth a component. Extract to `PathProgressSummary.vue` only if it later grows a bar or per-section breakdown. |
+| `node` route | router | `src/router/index.ts` | `/path/nodes/:nodeId`, name `node`, `meta.requiresAuth`, nested under `/path`. **Node-keyed, path-agnostic** — not nested under an assignment id (see Multi-path readiness). |
+| `pathProgress` / `stepView` | pure helper | `features/student/utils/` | Alongside `groupPathSections`. `stepView` → per-step `{ position, title, status, isCurrent }`; `pathProgress` → `{ completed, total }`. Take a `StudentPathView`, so already per-path. |
+| overall progress line | inline markup | `PathContent.vue` | One text node — not worth a component. Extract to `PathProgressSummary.vue` only if it later grows a bar or per-section breakdown. |
 | `motif-success`, `motif-danger` | tokens | `tailwind.config.ts` | Placeholder hex + the existing `PLACEHOLDER` comment. |
 
 **Explicitly deferred (not this slice):** `StateLoading` / `StateEmpty` / `StateError` /
 `StateLocked` shared components and a shared primary-action button — a separate PB-8j
 foundation-cleanup item. `PathView` keeps its inline state handling for now.
+
+### Multi-path readiness (per ADR-017)
+
+ADR-017 keeps the MVP single-active-path but requires the data model *and* the frontend
+structure to not preclude concurrent multi-path later. This slice's contribution to that,
+at zero extra cost:
+
+- **`PathView` (fetch + states) is split from `PathContent` (render a given path).** A future
+  multi-path view is a path picker feeding the same `PathContent` — not a rewrite.
+- **Components key off `assignment_id`** (carried in `StudentPathView`), never "the student's
+  path" as a singleton. `PathContent` and `PathStep` receive their data as props.
+- **The `node` route stays node-keyed** (`/path/nodes/:nodeId`) and path-agnostic, so it needs
+  no change when a student has more than one active path.
+- **`useStudentPath` stays singular** ("the active assignment") — a future `useStudentPaths`
+  (list) is an addition, not a replacement. No speculative plural code now.
+
+Not in scope: the plural read endpoint, a picker, or any multi-active behaviour — those wait
+for the dedicated multi-path item.
 
 ---
 
@@ -167,15 +190,19 @@ token roles" action items — brand's call, not a blocker for a placeholder toke
 - [ ] Step 6 — add the `node` route (`/path/nodes/:nodeId`, name `node`, `meta.requiresAuth`,
       nested under `/path`) + a minimal `NodeView.vue` holding screen; a router test asserts the
       route resolves and requires auth.
-- [ ] Step 7 — write failing component tests (TDD) for `PathView`:
+- [ ] Step 7 — write failing component tests (TDD) for `PathContent.vue` (props: one
+      `StudentPathView`):
   - each section maps its items to `PathStep` (delegation, not re-implementation)
-  - the overall progress line reflects `completed` / `total`
+  - the overall progress line reflects `pathProgress` `completed` / `total`
   - a fully completed path: every step `Review`, no `Open`, progress line reads "M of M"
   - regression: an unlabelled path and a labelled path (from #7) still render their sections
-- [ ] Step 8 — update `PathView` to make Step 7 pass: replace the inline `<li>` body (from #7)
-      with `<PathStep>`, add the progress line at the path head via `pathProgress` — "N of M
-      steps complete", plain, present tense, no "week" / "on track" / due dates.
-- [ ] Step 9 — `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` all clean;
+- [ ] Step 8 — implement `PathContent.vue` to make Step 7 pass: move the section/step render
+      out of `PathView` into `PathContent`, add the progress line via `pathProgress` — "N of M
+      steps complete", plain, present tense, no "week" / "on track" / due dates. `PathContent`
+      does no fetching and takes the view as a prop (ADR-017 multi-path readiness).
+- [ ] Step 9 — reduce `PathView` to the fetch + loading/error/no-path states + `<PathContent>`
+      on success; its existing state tests stay green.
+- [ ] Step 10 — `npm run test`, `npm run typecheck`, `npm run lint`, `npm run build` all clean;
       manual check against the `process-compose` stack with a seeded 3-step assignment (node 1
       completed): step 1 `Review`, step 2 current + `Open` → `NodeView` placeholder, step 3
       locked; progress line reads "1 of 3 steps complete".
@@ -237,9 +264,10 @@ change, no infra change — nothing that cannot be rolled back by redeploy.
 
 ## Related
 
-- **ADR:** [ADR-011 — Minimal Aggregation Worker for MVP node-completion state](../adrs/ADR-011-minimal-aggregation-worker.md); [ADR-015 — Challenge belongs to the path node; the student path is a self-contained sectioned sequence](../adrs/ADR-015-node-challenge-and-path-sections.md)
+- **ADR:** [ADR-011 — Minimal Aggregation Worker for MVP node-completion state](../adrs/ADR-011-minimal-aggregation-worker.md); [ADR-015 — Challenge belongs to the path node; the student path is a self-contained sectioned sequence](../adrs/ADR-015-node-challenge-and-path-sections.md); [ADR-017 — Student path assignment lifecycle](../adrs/ADR-017-student-path-assignment-lifecycle.md) (governs the `PathView` / `PathContent` split)
 - **Design:** `design/PB-8j-student-alpha-ux-foundation.md` §"S5 — My Path", §"Standard states", §"Semantic token roles"
 - **Spec files:** `openapi/core-domain-service.yaml` (`getStudentPath`), `features/learning-paths/student-path-view.feature`
 - **Backlog item:** PB-8d (Learning path view + progress & unlock)
 - **Predecessor slice:** `plans/PB-8d-learning-path-sections.md` (Phases 1–3, section labels) + motifpath-web#7 (the `PathView` step `<li>` this plan extends)
 - **Successor:** PB-8e — S6 node / lesson screen, consumes the `node` route seam
+- **Related workstream:** ADR-017 downstream — `motifpath-core` assignment-lifecycle migration + the `path-assignments.feature` / `getMyPath` rewording (its own plan; not part of this slice)
